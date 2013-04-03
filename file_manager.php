@@ -37,10 +37,16 @@ class FileManager {
 
     /**
      * If active, a thumbnail image will be shown for each image file.
-     * @warning This option can consume a lot of bandwidth
+     * @warning This option can consume a lot of bandwidth (you can set limits to this using image_previews_limit)
      * @var boolean 
      */
     public $show_image_previews = TRUE;
+
+    /**
+     * Maximum size, in bytes, that an image can be for show as a preview. Defaults to 500 KB, -1 means unlimited (all images will be previewed)
+     * @var int 
+     */
+    public $image_previews_limit = 512000;
 
     /**
      * Allow users to upload new files
@@ -131,11 +137,12 @@ class FileManager {
     private function _render_file_item($file) {
 
         $file_name = basename($file);
+        $size = filesize($file);
         $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
         $default_img = $this->static_url . '/images/files/unknown.png';
 
-        if ($this->show_image_previews && in_array($extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp')))
+        if ($this->show_image_previews && in_array($extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp')) && ($this->image_previews_limit < 0 || $size < $this->image_previews_limit))
             $img_src = $this->ajax_endpoint . (strpos($this->ajax_endpoint, '?') !== FALSE ? '&' : '?') . 'action=download&file=' . $file_name;
         else
             $img_src = $this->static_url . "/images/files/{$extension}.png";
@@ -147,7 +154,7 @@ class FileManager {
                 <img src="<?php echo $img_src ?>" onerror="this.src='<?php echo $default_img ?>'" />
             </div>
             <h4><?php echo $file_name ?></h4>
-            <h5><small><?php echo $this->_format_size(filesize($file)) ?></small></h5>
+            <h5><small><?php echo $this->_format_size($size) ?></small></h5>
             <div class="file-tools">                    
                 <form action="<?php echo $this->ajax_endpoint ?>" method="POST">
                     <input type="hidden" name="action" value="download" />
