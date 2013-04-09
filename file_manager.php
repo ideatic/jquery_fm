@@ -104,21 +104,21 @@ class FileManager {
         return $val;
     }
 
-    public function render() {
-        if (empty($this->path))
-            throw new RuntimeException('A path must be defined');
-
-        if (!empty($_REQUEST) || !empty($_FILES)) {
-            $process_ajax_success = $this->process_ajax(FALSE);
-        }
-
-        //List files
+    /**
+     * Retrieves the list of files to manage. This function can be overrided
+     * @return FileManagerItem[]
+     */
+    protected function _files() {
         $files = array();
         if (is_dir($this->path)) {
-            if ($handle = opendir($this->path)) {
+            if (($handle = opendir($this->path)) !== FALSE) {
                 while (false !== ($entry = readdir($handle))) {
                     if ($entry != "." && $entry != "..") {
-                        $files[] = $this->path . '/' . $entry;
+                        $item = new FileManagerItem();
+                        $item->tag = $this->path . DIRECTORY_SEPARATOR . $entry;
+                        $item->name = basename($item->tag);
+                        $item->size = filesize($item->tag);
+                        $files[] = $item;
                     }
                 }
                 closedir($handle);
@@ -127,6 +127,90 @@ class FileManager {
             }
         }
 
+        return $files;
+    }
+
+    /**
+     * Send the selected file to the user. This function can be overrided
+     * @return boolean
+     */
+    protected function _download(FileManagerItem $file) {
+        if (!file_exists($file->tag))
+            return FALSE;
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename=' . $file->name);
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: ' . $file->size);
+        ob_clean();
+        flush();
+        readfile($file->tag);
+    }
+
+    /**
+     * Save the uploaded file. This function can be overrided
+     * @param type $name
+     * @param string $path
+     * @throws RuntimeException
+     * @return FileManagerItem|FALSE
+     */
+    protected function _upload($name, $tmp_path) {
+        if (!is_dir($this->path)) {
+            if (!mkdir($this->path, 0755))
+                throw new RuntimeException("Destination path '$path' cannot be created");
+        }
+
+        //Look for empty path
+        $file_name = pathinfo($name, PATHINFO_FILENAME);
+        $extension = pathinfo($name, PATHINFO_EXTENSION);
+        $i = 0;
+        do {
+            $path = $this->path . DIRECTORY_SEPARATOR . $this->_clean_filename($file_name) . ($i == 0 ? '' : " ($i)") . '.' . $extension;
+            $i++;
+        } while (file_exists($path));
+
+        if (move_uploaded_file($tmp_path, $path)) {
+            $item = new FileManagerItem();
+            $item->tag = $path;
+            $item->name = basename($item->tag);
+            $item->size = filesize($item->tag);
+            return $item;
+        }
+        return FALSE;
+    }
+
+    /**
+     * Delete the selected file. This function can be overrided
+     * @return boolean
+     */
+    protected function _delete(FileManagerItem $file) {
+
+        return file_exists($file->tag) && unlink($file->tag);
+    }
+
+    /**
+     * Rename the indicated file. This function can be overrided
+     * @return boolean
+     */
+    protected function _rename(FileManagerItem $file, $new_name) {
+        //Sanitize destination file
+        $dest = dirname($file->tag) . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
+
+        return file_exists($file->tag) && !file_exists($dest) && rename($file->tag, $dest);
+    }
+
+    public function render() {
+        if (!empty($_REQUEST) || !empty($_FILES)) {
+            $process_request_success = $this->process_request(FALSE);
+        }
+
+        //List files
+        $files = $this->_files();
+
         //Render template
         ob_start();
         include 'file_manager_template.php';
@@ -134,31 +218,29 @@ class FileManager {
         return ob_get_clean();
     }
 
-    private function _render_file_item($file) {
+    private function _render_file_item(FileManagerItem $file) {
 
-        $file_name = basename($file);
-        $size = filesize($file);
-        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $extension = strtolower(pathinfo($file->name, PATHINFO_EXTENSION));
 
         $default_img = $this->static_url . '/images/files/unknown.png';
 
-        if ($this->show_image_previews && in_array($extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp')) && ($this->image_previews_limit < 0 || $size < $this->image_previews_limit))
-            $img_src = $this->ajax_endpoint . (strpos($this->ajax_endpoint, '?') !== FALSE ? '&' : '?') . 'action=download&file=' . $file_name;
+        if ($this->show_image_previews && in_array($extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp')) && ($this->image_previews_limit < 0 || $file->size < $this->image_previews_limit))
+            $img_src = $this->ajax_endpoint . (strpos($this->ajax_endpoint, '?') !== FALSE ? '&' : '?') . 'action=download&file=' . $file->name;
         else
             $img_src = $this->static_url . "/images/files/{$extension}.png";
 
         ob_start();
         ?>
-        <div class="file" data-file="<?php echo $file_name ?>">
+        <div class="file" data-file="<?php echo $file->name ?>">
             <div class="image-holder">
                 <img src="<?php echo $img_src ?>" onerror="this.src='<?php echo $default_img ?>'" />
             </div>
-            <h4><?php echo $file_name ?></h4>
-            <h5><small><?php echo $this->_format_size($size) ?></small></h5>
+            <h4><?php echo $file->name ?></h4>
+            <h5><small><?php echo $this->_format_size($file->size) ?></small></h5>
             <div class="file-tools">                    
                 <form action="<?php echo $this->ajax_endpoint ?>" method="POST">
                     <input type="hidden" name="action" value="download" />
-                    <input type="hidden" name="file" value="<?php echo $file_name ?>" />
+                    <input type="hidden" name="file" value="<?php echo $file->name ?>" />
                     <button type="submit" class="btn btn-primary"><i class="icon-download-alt icon-white"></i> <?php echo $this->strings['download'] ?></button>
                 </form>
                 <?php
@@ -166,7 +248,7 @@ class FileManager {
                     ?>                          
                     <form method="POST">
                         <input type="hidden" name="action" value="delete" />
-                        <input type="hidden" name="file" value="<?php echo $file_name ?>" />
+                        <input type="hidden" name="file" value="<?php echo $file->name ?>" />
                         <button type="submit" class="btn btn-danger btn-small delete"><i class="icon-trash icon-white"></i> <?php echo $this->strings['delete'] ?></button>
                     </form>
                     <div>
@@ -181,7 +263,7 @@ class FileManager {
         return ob_get_clean();
     }
 
-    public function process_ajax($output_response = TRUE) {
+    public function process_request($output_response = TRUE) {
         $status = 200;
         $response = array();
 
@@ -198,64 +280,53 @@ class FileManager {
                 //Move files
                 if ($status == 200) {
                     foreach ($info['error'] as $index => $error) {
-                        if (!is_dir($this->path)) {
-                            if (!mkdir($this->path, 0755))
-                                throw new RuntimeException("Destination path '$path' cannot be created");
-                        }
-
-                        //Look for empty path
-                        $name = pathinfo($info['name'][$index], PATHINFO_FILENAME);
-                        $extension = pathinfo($info['name'][$index], PATHINFO_EXTENSION);
-                        $i = 0;
-                        do {
-                            $path = $this->path . '/' . $name . ($i == 0 ? '' : " ($i)") . '.' . $extension;
-                            $i++;
-                        } while (file_exists($path));
-
-
-                        if (!$this->_in_working_path($path) || !move_uploaded_file($info['tmp_name'][$index], $path)) {
-                            $status = 500;
+                        $created_file = $this->_upload(basename($info['name'][$index]), $info['tmp_name'][$index]);
+                        if ($created_file) {
+                            $response['file_html'] = $this->_render_file_item($created_file);
                         } else {
-                            $response['file_html'] = $this->_render_file_item($path);
+                            $status = 500;
                         }
                     }
                 }
             }
         } else if (isset($_REQUEST['action'])) {
-            switch ($_REQUEST['action']) {
-                case 'download':
-                    $source = $this->path . '/' . $_REQUEST['file'];
-
-                    if (!file_exists($source) || !$this->_in_working_path($source))
-                        $status = 500;
-
-                    $this->_send_file($source);
+            //Find file
+            $file = FALSE;
+            foreach ($this->_files() as $f) {
+                if ($f->name == $_REQUEST['file']) {
+                    $file = $f;
                     break;
+                }
+            }
 
-                case 'rename':
-                    if (!$this->allow_editing)
+            if (!$file) {
+                $status = 500;
+            } else {
+                switch ($_REQUEST['action']) {
+                    case 'download':
+                        if (!$this->_download($file))
+                            $status = 500;
+
                         break;
 
-                    $source = $this->path . '/' . $_REQUEST['src'];
+                    case 'rename':
+                        if (!$this->allow_editing)
+                            break;
 
-                    //Sanitize destination file
-                    $dest = $this->path . '/' . preg_replace("/[^a-zA-Z0-9\-\_\ \.]+/", '', $_REQUEST['dest']);
+                        if (!$this->_rename($file, $_REQUEST['dest']))
+                            $status = 500;
 
-                    if (!file_exists($source) || !$this->_in_working_path($source) || file_exists($dest) || !rename($source, $dest))
-                        $status = 500;
-
-                    break;
-
-                case 'delete':
-                    if (!$this->allow_editing)
                         break;
 
-                    $file = $this->path . '/' . $_REQUEST['file'];
+                    case 'delete':
+                        if (!$this->allow_editing)
+                            break;
 
-                    if (!file_exists($file) || !$this->_in_working_path($file) || !unlink($file))
-                        $status = 500;
+                        if (!$this->_delete($file))
+                            $status = 500;
 
-                    break;
+                        break;
+                }
             }
         } else {
             //Nothing to do
@@ -279,24 +350,8 @@ class FileManager {
         }
     }
 
-    private function _in_working_path($path) {
-        $dir = realpath(dirname($path));
-
-        return $dir == realpath($this->path);
-    }
-
-    private function _send_file($path) {
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename=' . basename($path));
-        header('Content-Transfer-Encoding: binary');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Pragma: public');
-        header('Content-Length: ' . filesize($path));
-        ob_clean();
-        flush();
-        readfile($path);
+    private function _clean_filename($name) {
+        return preg_replace("/[^a-zA-Z0-9\-\_\ \.]+/", '', $name);
     }
 
     private function _format_number($number, $decimals = 0) {
@@ -329,5 +384,13 @@ class FileManager {
             '%unit%' => $unit
         ));
     }
+
+}
+
+class FileManagerItem {
+
+    public $name;
+    public $size;
+    public $tag;
 
 }

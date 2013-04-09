@@ -1,10 +1,10 @@
 <?php
-$span = 12 / $this->columns;
+/* @var $files FileManagerItem[] */
 ?>
 <div class="jquery_fm">
     <?php
-    if (isset($process_ajax_success)):
-        if ($process_ajax_success):
+    if (isset($process_request_success)):
+        if ($process_request_success):
             ?>
             <p><span class="label label-success"><?= $this->strings['success'] ?></span></p>
             <?php

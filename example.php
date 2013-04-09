@@ -5,7 +5,7 @@ $manager->path = dirname(__FILE__) . '/samples/';
 $manager->ajax_endpoint = '?isolated=true';
 
 if (isset($_GET['isolated'])) {
-    $manager->process_ajax();
+    $manager->process_request();
     return;
 }
 ?>

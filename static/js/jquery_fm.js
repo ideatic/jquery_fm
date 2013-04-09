@@ -39,7 +39,7 @@ function initialize(selector) {
         show_modal(fm_strings["rename"], fm_strings["prompt_newname"], $(file).data('file'), function(new_name) {
             execute_action(file, {
                 action: 'rename',
-                src: $(file).data('file'),
+                file: $(file).data('file'),
                 dest: new_name
             }, function() {
                 $(file).data('file', new_name);
@@ -103,12 +103,23 @@ function show_modal(title, text, prompt_value, ok, cancel) {
 </div>  \
 </div>');
 
+        //Invoke cancel callback
         $(modal).find('.cancel').click(function() {
             if (cancel)
                 cancel();
         });
+
+        //Invoke ok callback
         $(modal).find('.btn-primary').click(function() {
             ok($(modal).find('#response').val());
+        });
+
+        //Submit on Enter press
+        $(modal).find('#response').keypress(function(event) {
+            if (event.which == 13) {
+                event.preventDefault();
+                $(modal).find('.btn-primary').click();
+            }
         });
 
         $(modal).modal('show').on('hidden', function() {
