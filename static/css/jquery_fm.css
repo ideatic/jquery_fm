@@ -1,7 +1,7 @@
 .file {
     position: relative;
     text-align: center;
-    width: 128px;
+    max-width: 250px;
     float: left;
     margin: 5px;
 }
@@ -17,8 +17,10 @@
     max-height:  100%;
 }
 
-.file h4,.file h5 {
+.file h4,.file h5{
     margin-bottom: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .file h5 {
