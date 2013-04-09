@@ -17,7 +17,7 @@
     max-height:  100%;
 }
 
-.file h4 {
+.file h4,.file h5 {
     margin-bottom: 0;
 }
 

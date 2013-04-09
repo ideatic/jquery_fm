@@ -139,7 +139,7 @@ class FileManager {
             return FALSE;
 
         header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
+        header("Content-Type: application/octet-stream");
         header('Content-Disposition: attachment; filename=' . $file->name);
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
@@ -237,6 +237,9 @@ class FileManager {
             </div>
             <h4><?php echo $file->name ?></h4>
             <h5><small><?php echo $this->_format_size($file->size) ?></small></h5>
+            <?php if (!empty($file->extra)): ?>
+                <h5><small><?php echo $file->extra ?></small></h5>
+            <?php endif; ?>
             <div class="file-tools">                    
                 <form action="<?php echo $this->ajax_endpoint ?>" method="POST">
                     <input type="hidden" name="action" value="download" />
@@ -389,8 +392,28 @@ class FileManager {
 
 class FileManagerItem {
 
+    /**
+     * File name (unique)
+     * @var string
+     */
     public $name;
+
+    /**
+     * File size (in bytes)
+     * @var int
+     */
     public $size;
+
+    /**
+     * File related data (path, metadata, etc)
+     * @var mixed
+     */
     public $tag;
+
+    /**
+     * Extra data to show (date, owner, etc)
+     * @var string
+     */
+    public $extra;
 
 }
