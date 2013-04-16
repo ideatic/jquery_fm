@@ -37,18 +37,25 @@
             display: inline;
         }
 
-        .file-tools .rename{
+        .file-tools .rename, .create_folder{
             display: none;
         }
     </style>
     </noscript>
     <div class="drag-drop-panel well">
-        <?php
-        $i = 0;
-        foreach ($files as $file) {
-            echo $this->_render_file_item($file);
-        }
-        ?>
+        <?php if ($this->allow_folders): ?>
+            <ul class="breadcrumb text-left">
+                <li><a href="#"><?php echo $this->strings['home_folder'] ?></a> <span class="divider">/</span></li>
+            </ul>
+        <?php endif; ?>
+        <div class="files">
+            <?php
+            $i = 0;
+            foreach ($files as $file) {
+                echo $this->_render_file_item($file);
+            }
+            ?>
+        </div>
         <div class="drag-drop-message">
             <?php echo $this->strings['drop_files'] ?>
             <br/>
@@ -67,6 +74,10 @@
             <button type="submit" class="btn btn-primary submit">
                 <i class="icon-upload icon-white"></i>
                 <?php echo $this->strings['start_upload'] ?>
+            </button>
+            <button class="btn btn-info create_folder">
+                <i class="icon-folder-open icon-white"></i>
+                <?php echo $this->strings['create_folder'] ?>
             </button>
         </form>
     </div>
@@ -103,7 +114,8 @@
         var fm_ajax_endpoint = <?php echo json_encode($this->ajax_endpoint) ?>;
         if (fm_ajax_endpoint.length == 0)
             fm_ajax_endpoint = document.location.href;
-        var fm_file_icon = <?php echo json_encode('<img src="' . $this->static_url . '/images/files/%ext%.png" onerror="this.src=\'' . $this->static_url . '/images/files/unknown.png\'">') ?>;
+        var fm_file_icon = <?php echo json_encode('<img src="' . $this->static_url . '/images/files/%ext%.png" onerror="this.src=\'' . $this->static_url . '/images/files/unknown.png\'" />') ?>;
         var fm_strings = <?php echo json_encode($this->strings) ?>;
+        var fm_loader = <?php echo json_encode('<img class="loader" src="' . $this->static_url . '/images/loader.gif" />') ?>;
     </script>
 </div>

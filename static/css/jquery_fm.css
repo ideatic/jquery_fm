@@ -12,6 +12,12 @@
     line-height: 128px;
 }
 
+.file .image-holder button{    
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
 .file .image-holder img {
     max-width: 100%;
     max-height:  100%;
@@ -21,6 +27,11 @@
     margin-bottom: 0;
     text-overflow: ellipsis;
     overflow: hidden;
+    white-space: nowrap;
+}
+
+.file h4{
+    position: relative;
 }
 
 .file h5 {
@@ -29,29 +40,16 @@
 
 .file-tools {
     position: absolute;
-    top: 15px;
-    left: 0;
+    bottom: -20px;
     width: 100%;
     display: none;
+    z-index: 10;
+}
+.file-tools form{
+    display: inline;
 }
 
 .file:hover .file-tools,.file:active .file-tools, .file:focus .file-tools {
-    display: block;
-}
-
-.file-tools > * {
-    width: 92%;
-    max-width: 130px;
-    display: block;
-    margin: 5px auto;
-}
-
-
-.file-tools form .btn{
-    width: 100%;
-}
-
-.file-tools div .btn{
     display: block;
 }
 

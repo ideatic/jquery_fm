@@ -61,24 +61,35 @@ class FileManager {
     public $allow_editing = TRUE;
 
     /**
+     * Allow users to create and explore folders
+     * @var boolean 
+     */
+    public $allow_folders = TRUE;
+
+    /**
      * Localizable strings
      * @var array
      */
     public $strings = array(
         'add_file' => 'Add file',
         'download' => 'Download',
+        'explore' => 'Explore',
         'delete' => 'Delete',
         'rename' => 'Rename',
         'confirm_delete' => 'Are you sure you want to delete this file? The operation can not be undone',
-        'prompt_newname' => 'Please type the new file name.',
+        'prompt_newname' => 'Please type the new file name:',
         'drop_files' => 'Drop your files here!',
         'max_file_size' => 'max %size% each file',
         'accept' => 'Accept',
         'cancel' => 'Cancel',
         'start_upload' => 'Start upload',
-        'ajax_error' => 'Error doing a %operation% operation on file %file%',
+        'create_folder' => 'Create folder',
+        'create_folder_prompt' => 'Please type the new folder name:',
         'success' => 'Operation completed successfully',
         'error' => 'Error processing the request',
+        'number_files' => '%count% files',
+        'home_folder' => 'Home',
+        'try_again' => 'Try again',
     );
 
     public function __construct() {
@@ -108,17 +119,16 @@ class FileManager {
      * Retrieves the list of files to manage. This function can be overrided
      * @return FileManagerItem[]
      */
-    protected function _files() {
+    protected function _files($folder = '/') {
+        $folder = realpath($this->path . DIRECTORY_SEPARATOR . str_replace('..', '', $folder));
+
         $files = array();
-        if (is_dir($this->path)) {
-            if (($handle = opendir($this->path)) !== FALSE) {
+        if (is_dir($folder)) {
+            if (($handle = opendir($folder)) !== FALSE) {
                 while (false !== ($entry = readdir($handle))) {
                     if ($entry != "." && $entry != "..") {
-                        $item = new FileManagerItem();
-                        $item->tag = $this->path . DIRECTORY_SEPARATOR . $entry;
-                        $item->name = basename($item->tag);
-                        $item->size = filesize($item->tag);
-                        $files[] = $item;
+
+                        $files[] = $this->_populate_file_item($folder . DIRECTORY_SEPARATOR . $entry);
                     }
                 }
                 closedir($handle);
@@ -131,11 +141,31 @@ class FileManager {
     }
 
     /**
+     * Create a FileManagerItem given a path. This function can be overrided to customize the displayed information
+     * @return FileManagerItem
+     */
+    protected function _populate_file_item($path) {
+        $item = new FileManagerItem();
+        $item->path = $path;
+        $item->name = basename($path);
+        $item->is_folder = is_dir($path);
+        if ($item->is_folder) {
+            if (!$this->allow_folders)
+                continue;
+            $item->info = str_replace('%count%', max(0, iterator_count(new DirectoryIterator($path)) - 2), $this->strings['number_files']);
+        } else {
+            $item->size = filesize($path);
+            $item->info = $this->_format_size($item->size);
+        }
+        return $item;
+    }
+
+    /**
      * Send the selected file to the user. This function can be overrided
      * @return boolean
      */
     protected function _download(FileManagerItem $file) {
-        if (!file_exists($file->tag))
+        if (!file_exists($file->path))
             return FALSE;
 
         header('Content-Description: File Transfer');
@@ -148,7 +178,7 @@ class FileManager {
         header('Content-Length: ' . $file->size);
         ob_clean();
         flush();
-        readfile($file->tag);
+        readfile($file->path);
     }
 
     /**
@@ -158,7 +188,7 @@ class FileManager {
      * @throws RuntimeException
      * @return FileManagerItem|FALSE
      */
-    protected function _upload($name, $tmp_path) {
+    protected function _upload($folder, $name, $tmp_path) {
         if (!is_dir($this->path)) {
             if (!mkdir($this->path, 0755))
                 throw new RuntimeException("Destination path '$path' cannot be created");
@@ -169,16 +199,12 @@ class FileManager {
         $extension = pathinfo($name, PATHINFO_EXTENSION);
         $i = 0;
         do {
-            $path = $this->path . DIRECTORY_SEPARATOR . $this->_clean_filename($file_name) . ($i == 0 ? '' : " ($i)") . '.' . $extension;
+            $path = $this->path . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $this->_clean_filename($file_name) . ($i == 0 ? '' : " ($i)") . '.' . $extension;
             $i++;
         } while (file_exists($path));
 
         if (move_uploaded_file($tmp_path, $path)) {
-            $item = new FileManagerItem();
-            $item->tag = $path;
-            $item->name = basename($item->tag);
-            $item->size = filesize($item->tag);
-            return $item;
+            return $this->_populate_file_item($path);
         }
         return FALSE;
     }
@@ -188,8 +214,11 @@ class FileManager {
      * @return boolean
      */
     protected function _delete(FileManagerItem $file) {
-
-        return file_exists($file->tag) && unlink($file->tag);
+        if ($file->is_folder) {
+            return is_dir($file->path) && $this->_delete_folder($file->path);
+        } else {
+            return file_exists($file->path) && unlink($file->path);
+        }
     }
 
     /**
@@ -198,9 +227,23 @@ class FileManager {
      */
     protected function _rename(FileManagerItem $file, $new_name) {
         //Sanitize destination file
-        $dest = dirname($file->tag) . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
+        $dest = dirname($file->path) . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
 
-        return file_exists($file->tag) && !file_exists($dest) && rename($file->tag, $dest);
+        return file_exists($file->path) && !file_exists($dest) && rename($file->path, $dest);
+    }
+
+    /**
+     * Create the selected folder. This function can be overrided
+     * @return FileManagerItem|FALSE
+     */
+    protected function _create_folder($folder, $name) {
+        //Sanitize destination file
+        $dest = $this->path . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $this->_clean_filename($name);
+
+        if (!is_dir($dest) && mkdir($dest) && ($real_path = realpath($dest))) {
+            return $this->_populate_file_item($real_path);
+        }
+        return FALSE;
     }
 
     public function render() {
@@ -224,7 +267,9 @@ class FileManager {
 
         $default_img = $this->static_url . '/images/files/unknown.png';
 
-        if ($this->show_image_previews && in_array($extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp')) && ($this->image_previews_limit < 0 || $file->size < $this->image_previews_limit))
+        if ($file->is_folder)
+            $img_src = $this->static_url . "/images/files/folder.png";
+        else if ($this->show_image_previews && in_array($extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp')) && ($this->image_previews_limit < 0 || $file->size < $this->image_previews_limit))
             $img_src = $this->ajax_endpoint . (strpos($this->ajax_endpoint, '?') !== FALSE ? '&' : '?') . 'action=download&file=' . $file->name;
         else
             $img_src = $this->static_url . "/images/files/{$extension}.png";
@@ -232,35 +277,39 @@ class FileManager {
         ob_start();
         ?>
         <div class="file" data-file="<?php echo $file->name ?>">
-            <div class="image-holder">
-                <img src="<?php echo $img_src ?>" onerror="this.src='<?php echo $default_img ?>'" />
+            <div class="image-holder">             
+                <?php if ($file->is_folder): ?>
+                    <button class="open_folder" title="<?php echo $this->strings['explore'] ?>"><img src="<?php echo $img_src ?>" onerror="this.src='<?php echo $default_img ?>'" /></button>
+                <?php else: ?>
+                    <form action="<?php echo $this->ajax_endpoint ?>" method="POST">
+                        <input type="hidden" name="action" value="download" />
+                        <input type="hidden" name="file" value="<?php echo $file->name ?>" />
+                        <button type="submit" title="<?php echo $this->strings['download'] ?>"><img src="<?php echo $img_src ?>" onerror="this.src='<?php echo $default_img ?>'" /></button>
+                    </form> 
+                <?php endif; ?>                   
             </div>
-            <h4><?php echo $file->name ?></h4>
-            <h5><small><?php echo $this->_format_size($file->size) ?></small></h5>
+            <h4 title="<?php echo htmlspecialchars($file->name) ?>  ">
+                <?php echo $file->name ?>    
+            </h4>
+            <h5><small><?php echo $file->info ?></small></h5>
             <?php if (!empty($file->extra)): ?>
                 <h5><small><?php echo $file->extra ?></small></h5>
             <?php endif; ?>
-            <div class="file-tools">                    
-                <form action="<?php echo $this->ajax_endpoint ?>" method="POST">
-                    <input type="hidden" name="action" value="download" />
-                    <input type="hidden" name="file" value="<?php echo $file->name ?>" />
-                    <button type="submit" class="btn btn-primary"><i class="icon-download-alt icon-white"></i> <?php echo $this->strings['download'] ?></button>
-                </form>
-                <?php
-                if ($this->allow_editing) {
-                    ?>                          
+
+            <?php
+            if ($this->allow_editing) {
+                ?>    
+                <div class="file-tools">                        
                     <form method="POST">
                         <input type="hidden" name="action" value="delete" />
                         <input type="hidden" name="file" value="<?php echo $file->name ?>" />
-                        <button type="submit" class="btn btn-danger btn-small delete"><i class="icon-trash icon-white"></i> <?php echo $this->strings['delete'] ?></button>
+                        <button type="submit" class="btn btn-danger btn-mini delete" title="<?php echo $this->strings['delete'] ?>"><i class="icon-trash icon-white"></i></button>
                     </form>
-                    <div>
-                        <a class="btn btn-small rename"><i class="icon-edit"></i> <?php echo $this->strings['rename'] ?></a>         
-                    </div>
-                    <?php
-                }
-                ?>
-            </div>
+                    <a class="btn btn-info btn-mini rename" title="<?php echo $this->strings['rename'] ?>"><i class="icon-edit icon-white"></i></a>         
+                </div>
+                <?php
+            }
+            ?>
         </div>        
         <?php
         return ob_get_clean();
@@ -269,6 +318,9 @@ class FileManager {
     public function process_request($output_response = TRUE) {
         $status = 200;
         $response = array();
+
+
+        $folder = $this->allow_folders && isset($_REQUEST['folder']) ? str_replace('..', '', $_REQUEST['folder']) : '/';
 
         if (!empty($_FILES) && $this->allow_upload) {
             //Upload files
@@ -283,7 +335,7 @@ class FileManager {
                 //Move files
                 if ($status == 200) {
                     foreach ($info['error'] as $index => $error) {
-                        $created_file = $this->_upload(basename($info['name'][$index]), $info['tmp_name'][$index]);
+                        $created_file = $this->_upload($folder, basename($info['name'][$index]), $info['tmp_name'][$index]);
                         if ($created_file) {
                             $response['file_html'] = $this->_render_file_item($created_file);
                         } else {
@@ -293,43 +345,69 @@ class FileManager {
                 }
             }
         } else if (isset($_REQUEST['action'])) {
-            //Find file
-            $file = FALSE;
-            foreach ($this->_files() as $f) {
-                if ($f->name == $_REQUEST['file']) {
-                    $file = $f;
-                    break;
+            //Find file 
+            if (isset($_REQUEST['file'])) {
+                $file = FALSE;
+                foreach ($this->_files($folder) as $f) {
+                    if ($f->name == $_REQUEST['file']) {
+                        $file = $f;
+                        break;
+                    }
+                }
+                if (!$file) {
+                    $status = 500;
                 }
             }
 
-            if (!$file) {
-                $status = 500;
-            } else {
-                switch ($_REQUEST['action']) {
-                    case 'download':
-                        if (!$this->_download($file))
-                            $status = 500;
+            switch ($_REQUEST['action']) {
+                case 'download':
+                    if (!$this->_download($file))
+                        $status = 500;
 
+                    break;
+
+                case 'rename':
+                    if (!$this->allow_editing)
                         break;
 
-                    case 'rename':
-                        if (!$this->allow_editing)
-                            break;
+                    if (!$this->_rename($file, $_REQUEST['dest']))
+                        $status = 500;
 
-                        if (!$this->_rename($file, $_REQUEST['dest']))
-                            $status = 500;
+                    break;
 
+                case 'delete':
+                    if (!$this->allow_editing)
                         break;
 
-                    case 'delete':
-                        if (!$this->allow_editing)
-                            break;
+                    if (!$this->_delete($file))
+                        $status = 500;
 
-                        if (!$this->_delete($file))
-                            $status = 500;
+                    break;
 
+                case 'list_files':
+                    if (!$this->allow_folders)
                         break;
-                }
+
+                    $html = array();
+                    foreach ($this->_files($folder) as $file) {
+                        $html[] = $this->_render_file_item($file);
+                    }
+                    $response['files'] = implode('', $html);
+
+                    break;
+
+                case 'create_folder':
+                    if (!$this->allow_folders || !$this->allow_editing)
+                        break;
+
+                    $item = $this->_create_folder($folder, $_REQUEST['name']);
+                    if ($item) {
+                        $response['file_html'] = $this->_render_file_item($item);
+                    } else {
+                        $status = 500;
+                    }
+
+                    break;
             }
         } else {
             //Nothing to do
@@ -388,6 +466,29 @@ class FileManager {
         ));
     }
 
+    private function _delete_folder($directory, $delete_dirs = TRUE) {
+        if (!is_dir($directory))
+            return FALSE;
+
+        $dirh = opendir($directory);
+        if ($dirh == FALSE)
+            return FALSE;
+
+        while (($file = readdir($dirh)) !== FALSE) {
+            if ($file[0] != '.') {
+                $path = $directory . DIRECTORY_SEPARATOR . $file;
+                if (is_dir($path)) {
+                    if ($delete_dirs)
+                        $this->_delete_folder($path, $delete_dirs);
+                } else {
+                    unlink($path);
+                }
+            }
+        }
+        closedir($dirh);
+        return rmdir($directory);
+    }
+
 }
 
 class FileManagerItem {
@@ -399,21 +500,33 @@ class FileManagerItem {
     public $name;
 
     /**
-     * File size (in bytes)
+     * File related data (path, metadata, etc)
+     * @var mixed
+     */
+    public $path;
+
+    /**
+     * File size (if applicable)
      * @var int
      */
     public $size;
 
     /**
-     * File related data (path, metadata, etc)
-     * @var mixed
+     * File info to show (file size, number of files)
+     * @var string
      */
-    public $tag;
+    public $info;
 
     /**
      * Extra data to show (date, owner, etc)
      * @var string
      */
     public $extra;
+
+    /**
+     * The current file is a folder
+     * @var boolean
+     */
+    public $is_folder = FALSE;
 
 }
