@@ -64,8 +64,16 @@ if (isset($_GET['isolated'])) {
                 Works with PHP or any other server-side platform that supports standard HTML form file uploads.
                 i18n and l10n enabled.
             </blockquote>
+            <h2>Full features</h2>
             <?php
             echo $manager->render();
+            ?>
+            <h2>Basic file explorer</h2>
+            <?php
+            $basic = clone $manager;
+            $basic->allow_upload = FALSE;
+            $basic->allow_folders = FALSE;
+            echo $basic->render();
             ?>
         </div> <!-- /container -->
 
@@ -75,6 +83,5 @@ if (isset($_GET['isolated'])) {
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script><script>window.jQuery || document.write('<script src="static/js/jquery.js"><\/script>')</script>
         <script src="static/bootstrap/js/bootstrap.min.js"></script>
         <script src="static/js/jquery_fm.js"></script>
-
     </body>
 </html>

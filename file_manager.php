@@ -120,7 +120,11 @@ class FileManager {
      * @return FileManagerItem[]
      */
     protected function _files($folder = '/') {
-        $folder = realpath($this->path . DIRECTORY_SEPARATOR . str_replace('..', '', $folder));
+        if ($this->allow_folders) {
+            $folder = realpath($this->path . DIRECTORY_SEPARATOR . str_replace('..', '', $folder));
+        } else {
+            $folder = realpath($this->path);
+        }
 
         $files = array();
         if (is_dir($folder)) {
@@ -128,7 +132,9 @@ class FileManager {
                 while (false !== ($entry = readdir($handle))) {
                     if ($entry != "." && $entry != "..") {
 
-                        $files[] = $this->_populate_file_item($folder . DIRECTORY_SEPARATOR . $entry);
+                        $file = $this->_populate_file_item($folder . DIRECTORY_SEPARATOR . $entry);
+                        if ($file)
+                            $files[] = $file;
                     }
                 }
                 closedir($handle);
@@ -151,7 +157,7 @@ class FileManager {
         $item->is_folder = is_dir($path);
         if ($item->is_folder) {
             if (!$this->allow_folders)
-                continue;
+                return FALSE;
             $item->info = str_replace('%count%', max(0, iterator_count(new DirectoryIterator($path)) - 2), $this->strings['number_files']);
         } else {
             $item->size = filesize($path);
@@ -189,9 +195,15 @@ class FileManager {
      * @return FileManagerItem|FALSE
      */
     protected function _upload($folder, $name, $tmp_path) {
-        if (!is_dir($this->path)) {
-            if (!mkdir($this->path, 0755))
-                throw new RuntimeException("Destination path '$path' cannot be created");
+        if ($this->allow_folders) {
+            $folder_path = $this->path . DIRECTORY_SEPARATOR . $folder;
+        } else {
+            $folder_path = $this->path;
+        }
+
+        if (!is_dir($folder_path)) {
+            if (!mkdir($folder_path, 0755))
+                throw new RuntimeException("Destination path '$folder_path' cannot be created");
         }
 
         //Look for empty path
@@ -199,7 +211,7 @@ class FileManager {
         $extension = pathinfo($name, PATHINFO_EXTENSION);
         $i = 0;
         do {
-            $path = $this->path . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $this->_clean_filename($file_name) . ($i == 0 ? '' : " ($i)") . '.' . $extension;
+            $path = $folder_path . DIRECTORY_SEPARATOR . $this->_clean_filename($file_name) . ($i == 0 ? '' : " ($i)") . '.' . $extension;
             $i++;
         } while (file_exists($path));
 
