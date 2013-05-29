@@ -55,10 +55,11 @@
 
             var open_folder = function(path) {
                 path = path.replace(/\/+/g, '/');
+                var $files = $fm.find('.files');
 
                 //Show loader
-                $fm.find('.files').fadeOut('normal', function() {
-                    $(this).html(settings.loader).fadeIn();
+                $files.fadeOut('normal', function() {
+                    $(this).html(settings.loader).fadeIn('normal');
                 });
 
                 //Request
@@ -68,7 +69,7 @@
                 }, function(data) {
                     current_folder = path;
 
-                    $fm.find('.files').stop().empty();
+                    $files.stop(true, true).fadeTo('normal', 1).empty();
                     if (data.files) {
                         add_file(data.files);
                     }
@@ -79,7 +80,7 @@
                     var retry = $('<a href="#">' + settings.strings['try_again'] + '</a>').click(function() {
                         open_folder(path);
                     });
-                    $('.files').html(retry);
+                    $files.html(retry);
                 });
             };
 
@@ -199,7 +200,7 @@
                         if (effect == 'show')
                             $(this).show('slow');
                         else
-                            $(this).fadeIn('slow');
+                            $(this).fadeTo("slow", 1);
                     }
                 });
                 initialize_file_tools(new_file);

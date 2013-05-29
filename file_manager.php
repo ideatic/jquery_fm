@@ -178,13 +178,23 @@ class FileManager {
         header("Content-Type: application/octet-stream");
         header('Content-Disposition: attachment; filename=' . $file->name);
         header('Content-Transfer-Encoding: binary');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Pragma: public');
         header('Content-Length: ' . $file->size);
+
+        //Cache control
+        $mod_date = filemtime($file->path);
+        $mod_since = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? $_SERVER['HTTP_IF_MODIFIED_SINCE'] : FALSE;
+        if ($mod_date && $mod_since && strtotime($mod_since) >= $mod_date) {
+            header('HTTP/1.1 304 Not Modified');
+            return TRUE;
+        } else {
+            header('Last-Modified: ' . gmdate("D, d M Y H:i:s", $mod_date) . ' GMT');
+            header('Pragma: public');
+        }
+
         ob_clean();
         flush();
         readfile($file->path);
+        return TRUE;
     }
 
     /**
@@ -252,7 +262,7 @@ class FileManager {
         //Sanitize destination file
         $dest = $this->path . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $this->_clean_filename($name);
 
-        if (!is_dir($dest) && mkdir($dest) && ($real_path = realpath($dest))) {
+        if (!is_dir($dest) && mkdir($dest, 0755, TRUE) && ($real_path = realpath($dest))) {
             return $this->_populate_file_item($real_path);
         }
         return FALSE;
