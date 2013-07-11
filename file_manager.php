@@ -121,18 +121,18 @@ class FileManager {
      */
     protected function _files($folder = '/') {
         if ($this->allow_folders) {
-            $folder = realpath($this->path . DIRECTORY_SEPARATOR . str_replace('..', '', $folder));
+            $real_folder = realpath($this->path . DIRECTORY_SEPARATOR . str_replace('..', '', $folder));
         } else {
-            $folder = realpath($this->path);
+            $real_folder = realpath($this->path);
         }
 
         $files = array();
-        if (is_dir($folder)) {
-            if (($handle = opendir($folder)) !== FALSE) {
+        if (is_dir($real_folder)) {
+            if (($handle = opendir($real_folder)) !== FALSE) {
                 while (false !== ($entry = readdir($handle))) {
                     if ($entry != "." && $entry != "..") {
 
-                        $file = $this->_populate_file_item($folder . DIRECTORY_SEPARATOR . $entry);
+                        $file = $this->_populate_file_item($real_folder . DIRECTORY_SEPARATOR . $entry, $folder);
                         if ($file)
                             $files[] = $file;
                     }
@@ -150,9 +150,10 @@ class FileManager {
      * Create a FileManagerItem given a path. This function can be overrided to customize the displayed information
      * @return FileManagerItem
      */
-    protected function _populate_file_item($path) {
+    protected function _populate_file_item($path, $folder) {
         $item = new FileManagerItem();
         $item->path = $path;
+        $item->folder = $folder;
         $item->name = basename($path);
         $item->is_folder = is_dir($path);
         if ($item->is_folder) {
@@ -226,7 +227,7 @@ class FileManager {
         } while (file_exists($path));
 
         if (move_uploaded_file($tmp_path, $path)) {
-            return $this->_populate_file_item($path);
+            return $this->_populate_file_item($path, $folder);
         }
         return FALSE;
     }
@@ -263,7 +264,7 @@ class FileManager {
         $dest = $this->path . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $this->_clean_filename($name);
 
         if (!is_dir($dest) && mkdir($dest, 0755, TRUE) && ($real_path = realpath($dest))) {
-            return $this->_populate_file_item($real_path);
+            return $this->_populate_file_item($real_path, $folder);
         }
         return FALSE;
     }
@@ -305,6 +306,7 @@ class FileManager {
                 <?php else: ?>
                     <form action="<?php echo $this->ajax_endpoint ?>" method="POST">
                         <input type="hidden" name="action" value="download" />
+                        <input type="hidden" name="folder" value="<?php echo $file->folder ?>" />
                         <input type="hidden" name="file" value="<?php echo $file->name ?>" />
                         <button type="submit" title="<?php echo $this->strings['download'] ?>"><img src="<?php echo $img_src ?>" onerror="this.src='<?php echo $default_img ?>'" /></button>
                     </form> 
@@ -325,6 +327,7 @@ class FileManager {
                     <form method="POST">
                         <input type="hidden" name="action" value="delete" />
                         <input type="hidden" name="file" value="<?php echo $file->name ?>" />
+                        <input type="hidden" name="folder" value="<?php echo $file->folder ?>" />
                         <button type="submit" class="btn btn-danger btn-mini delete" title="<?php echo $this->strings['delete'] ?>"><i class="icon-trash icon-white"></i></button>
                     </form>
                     <a class="btn btn-info btn-mini rename" title="<?php echo $this->strings['rename'] ?>"><i class="icon-edit icon-white"></i></a>         
@@ -526,6 +529,12 @@ class FileManagerItem {
      * @var mixed
      */
     public $path;
+
+    /**
+     * File relative folder
+     * @var string
+     */
+    public $folder;
 
     /**
      * File size (if applicable)
