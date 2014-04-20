@@ -172,7 +172,7 @@ class FileProviderFS extends FileProvider
         }
     }
 
-    public function download(FileManagerItem $file, $force = false)
+    public function download(FileManagerItem $file, $force = true)
     {
         if (!file_exists($file->path)) {
             return false;

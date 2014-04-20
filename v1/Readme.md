@@ -1,6 +1,10 @@
-# jQuery File Manager
+# jQuery File Manager v1
 
 **jQuery File Manager** is a file manager and upload widget that uses Bootstrap and jQuery. It supports upload, download, rename and deletion of files found in a folder.
+
+## About this version
+
+This is the first jquery_fm version, maintained because it was able to work without Javascript enabled.
 
 ## Features
 

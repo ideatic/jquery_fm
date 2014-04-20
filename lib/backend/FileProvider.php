@@ -73,5 +73,5 @@ abstract class FileProvider
      *
      * @return boolean
      */
-    public abstract function download(FileManagerItem $file, $force=true);
+    public abstract function download(FileManagerItem $file, $force = true);
 }
