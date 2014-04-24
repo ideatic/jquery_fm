@@ -1,2 +1,9 @@
+# General rules
+.idea
 nbproject/
-todo/
+docs/
+vendor/
+composer.lock
+composer.phar
+
+# Custom rules
