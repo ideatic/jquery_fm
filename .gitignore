@@ -6,4 +6,9 @@ vendor/
 composer.lock
 composer.phar
 
+# OS crap
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store
+
 # Custom rules
