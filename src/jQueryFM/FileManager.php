@@ -70,7 +70,6 @@ class jQueryFM_FileManager
     public $strings = array(
         'add_file' => 'Add file',
         'download' => 'Download',
-        'explore' => 'Explore',
         'delete' => 'Delete',
         'rename' => 'Rename',
         'confirm_delete' => 'Are you sure you want to delete this file? The operation can not be undone',
@@ -79,10 +78,8 @@ class jQueryFM_FileManager
         'max_file_size' => 'max % each file',
         'accept' => 'Accept',
         'cancel' => 'Cancel',
-        'start_upload' => 'Start upload',
         'create_folder' => 'Create folder',
         'create_folder_prompt' => 'Please type the new folder name:',
-        'success' => 'Operation completed successfully',
         'number_files' => '% files',
         'home_folder' => 'Home',
         'try_again' => 'Try again',
