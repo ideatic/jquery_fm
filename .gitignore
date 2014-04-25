@@ -1,7 +1,7 @@
 # General rules
 .idea
 nbproject/
-docs/
+private/
 vendor/
 composer.lock
 composer.phar

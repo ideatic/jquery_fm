@@ -5,10 +5,11 @@
  */
 class jQueryFM_FileManager
 {
+
     /**
      * Provider used to list and manipulate files.
      * This is a read only property
-     * @var jQueryFM_FileProvider
+     * @var jQueryFM_FileProvider_Base
      */
     public $provider;
 
@@ -93,9 +94,14 @@ class jQueryFM_FileManager
         'error_maxsize' => 'File is too large',
     );
 
-    public function __construct(jQueryFM_FileProvider $provider)
+    /**
+     * Initializes a new instance
+     *
+     * @param \jQueryFM_FileProvider_Base|string $provider_or_path File provider used to navigate and perform the actions on the explorer, or string to path manipulated using jQueryFM_FileProvider_FS
+     */
+    public function __construct($provider_or_path)
     {
-        $this->provider = $provider;
+        $this->provider = is_string($provider_or_path) ? new jQueryFM_FileProvider_FS($provider_or_path) : $provider_or_path;
         $this->provider->manager = $this;
         $max_upload = $this->_php_unit(ini_get('upload_max_filesize'));
         $max_post = $this->_php_unit(ini_get('post_max_size'));
@@ -122,7 +128,7 @@ class jQueryFM_FileManager
             'allow_editing' => $this->allow_editing,
             'allow_folders' => $this->allow_folders,
             'max_file_size' => $this->max_size,
-            'max_file_size_readable' => jQueryFM_FileManagerHelper::format_size($this->max_size),
+            'max_file_size_readable' => jQueryFM_Helper::format_size($this->max_size),
             'accept_file_types' => $this->accept_file_types,
             'ajax_endpoint' => $this->ajax_endpoint,
             'icons_url' => $this->icons_url,
@@ -349,6 +355,7 @@ class FileManagerItem
      * @var string
      */
     public $info;
+
     /**
      * The current file is a folder
      * @var boolean
@@ -360,6 +367,7 @@ class FileManagerItem
      * @var string
      */
     public $icon;
+
 }
 
 class FileManagerException extends Exception

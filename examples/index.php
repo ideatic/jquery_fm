@@ -2,12 +2,12 @@
 require '../vendor/autoload.php';
 
 //Full featured file manager
-$manager = new jQueryFM_FileManager(new jQueryFM_FileProviderFS(dirname(__FILE__) . '/testdir/'));
+$manager = new jQueryFM_FileManager(dirname(__FILE__) . '/testdir/');
 $manager->ajax_endpoint = '?isolated=true';
 $manager->icons_url = 'static/icons';
 
 //Basic file explorer
-$basic = new jQueryFM_FileManager(new jQueryFM_FileProviderFS(dirname(__FILE__) . '/testdir/'));
+$basic = new jQueryFM_FileManager(dirname(__FILE__) . '/testdir/');
 $basic->ajax_endpoint = '?isolated=true';
 $basic->allow_editing = false;
 $basic->allow_upload = false;

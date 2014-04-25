@@ -3,7 +3,7 @@
 /**
  * Implements a file provider that uses the local file system
  */
-class jQueryFM_FileProviderFS extends jQueryFM_FileProvider
+class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
 {
 
     /**
@@ -46,7 +46,7 @@ class jQueryFM_FileProviderFS extends jQueryFM_FileProvider
             $item->info = str_replace('%', max(0, iterator_count(new DirectoryIterator($path)) - 2), $this->manager->strings['number_files']);
         } else {
             $item->size = filesize($path);
-            $item->info = jQueryFM_FileManagerHelper::format_size($item->size);
+            $item->info = jQueryFM_Helper::format_size($item->size);
 
             //Extract preview
             if ($this->manager->image_preview_limit < 0 || $item->size < $this->manager->image_preview_limit) {
@@ -170,7 +170,7 @@ class jQueryFM_FileProviderFS extends jQueryFM_FileProvider
     {
 
         if ($file->is_folder) {
-            return is_dir($file->path) && jQueryFM_FileManagerHelper::recursive_delete($file->path);
+            return is_dir($file->path) && jQueryFM_Helper::recursive_delete($file->path);
         } else {
             return file_exists($file->path) && unlink($file->path);
         }
