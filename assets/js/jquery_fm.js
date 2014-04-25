@@ -67,7 +67,7 @@
 
         /** #### OPTIONS #### */
         this._options = $.extend(
-            true,               // deep extend
+            true, // deep extend
             {
                 autoHideBreadcrumb: false
             },
@@ -160,7 +160,7 @@
                 .prepend('<i class="icon-folder-open"></i>')
                 .click(function () {
                     plugin._ask(plugin._options['strings']["create_folder"], plugin._options['strings']["create_folder_prompt"], true, function (new_name) {
-                        plugin._request(null, 'create_folder', { name: new_name }, function (response) {
+                        plugin._request(null, 'create_folder', {name: new_name}, function (response) {
                             if (response.file) {
                                 plugin._createFile(response.file).hide().appendTo(plugin.$files).show('slow');
                             }
@@ -344,8 +344,20 @@
                             file: srcName,
                             destName: srcName,
                             destFolder: destFolder
-                        }, function () {
+                        }, function (response) {
+                            //Hide moved file
                             $srcFile.hide('slow');
+
+                            //Update destination folder
+                            if ($element.is('.file') && response.file) {
+                                //Replace old file with the new one
+                                $element.find('.info').fadeOut('normal', function () {
+                                    var $new = plugin._createFile(response.file);
+                                    $new.find('.info').hide().fadeIn( 'slow');
+                                    $element.replaceWith($new);
+                                });
+                            }
+
                         });
                     } else {
                         dataTransfer.dropEffect = 'move';
@@ -409,7 +421,7 @@
                 .prepend('<i class="icon-trash"></i>')
                 .click(function () {
                     plugin._ask(plugin._options['strings']["delete"], plugin._options['strings']["confirm_delete"], false, function () {
-                        plugin._request($file, 'delete', { file: fileData.name }, function () {
+                        plugin._request($file, 'delete', {file: fileData.name}, function () {
                             //Remove file from explorer
                             $file.hide('slow', function () {
                                 $file.remove();
@@ -684,7 +696,7 @@
         if (instance
             && methodOrOptions.indexOf('_') != 0
             && instance[ methodOrOptions ]
-            && typeof( instance[ methodOrOptions ] ) == 'function') {
+            && typeof (instance[ methodOrOptions ]) == 'function') {
 
             return instance[ methodOrOptions ].apply(instance, Array.prototype.slice.call(arguments, 1));
 

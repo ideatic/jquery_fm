@@ -153,11 +153,15 @@ class jQueryFM_FileProviderFS extends jQueryFM_FileProvider
     public function rename(FileManagerItem $file, $new_folder, $new_name)
     {
         //Sanitize destination file
-        $path = $this->_get_folder_path($new_folder);
-        $dest = $path . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
+        $dest = $this->_get_folder_path($new_folder) . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
 
         if (file_exists($file->path) && !file_exists($dest) && rename($file->path, $dest)) {
-            return $this->_populate_file_item($dest, $file->folder);
+            //If directory changes, return directory info
+            if (dirname($file->path) != dirname($dest)) {
+                return $this->_populate_file_item(dirname($dest), $file->folder);
+            } else {
+                return $this->_populate_file_item($dest, $file->folder);
+            }
         }
         return false;
     }

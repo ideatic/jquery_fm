@@ -105,7 +105,7 @@ if (isset($_GET['isolated'])) {
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="static/js/jquery.js"><\/script>')</script>
 <!-- Only if we want fancy modal windows for prompt and confirm -->
-<script src="../asssets/js/modal.js"></script>
+<script src="../assets/js/modal.js"></script>
 <script src="../assets/js/jquery_fm.js"></script>
 <?php
 echo $manager->render('full');
