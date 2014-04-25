@@ -110,13 +110,10 @@ class jQueryFM_FileManager
     }
 
     /**
-     * Render the HTML and JS code necessary to initialize the current instance
-     *
-     * @param string $id ID of the element where the file manager will be placed
-     *
-     * @return string
+     * Gets the required settings to initialize the JS file manager
+     * @return array
      */
-    public function render($id)
+    protected function _initialization_settings()
     {
         $files = array();
 
@@ -136,11 +133,23 @@ class jQueryFM_FileManager
             'files' => $files
         );
 
-        //Render template
+        return $settings;
+    }
+
+    /**
+     * Render the HTML and JS code necessary to initialize the current instance
+     *
+     * @param string $id ID of the element where the file manager will be placed
+     *
+     * @return string
+     */
+    public function render($id)
+    {
+        //Initialize JS
         ob_start();
         ?>
         <script>
-            jQuery('#<?= $id ?>').jquery_fm(<?= json_encode($settings) ?>);
+            jQuery('#<?= $id ?>').jquery_fm(<?= json_encode($this->_initialization_settings()) ?>);
         </script>
         <?php
         return ob_get_clean();
