@@ -12,7 +12,7 @@ $basic->ajax_endpoint = '?isolated=true';
 $basic->allow_editing = false;
 $basic->allow_upload = false;
 $basic->allow_folders = false;
-$basic->icons_url = 'static/fileicons';
+$basic->icons_url = $manager->icons_url;
 
 if (isset($_GET['isolated'])) {
     $manager->process_request();
