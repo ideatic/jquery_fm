@@ -302,9 +302,9 @@ class jQueryFM_FileManager
 
             header('Content-type: application/json');
             echo json_encode($response);
-        } else {
-            return $response['status'] == 'success';
-        }
+        } 
+        
+        return $response['status'] == 'success';
     }
 
     /* Helpers */
