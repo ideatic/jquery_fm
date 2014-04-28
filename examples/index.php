@@ -4,7 +4,7 @@ require '../vendor/autoload.php';
 //Full featured file manager
 $manager = new jQueryFM_FileManager(dirname(__FILE__) . '/testdir/');
 $manager->ajax_endpoint = '?isolated=true';
-$manager->icons_url = 'static/fileicons';
+$manager->icons_url = '../assets/img/fileicons';
 
 //Basic file explorer
 $basic = new jQueryFM_FileManager(dirname(__FILE__) . '/testdir/');

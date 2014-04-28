@@ -17,6 +17,10 @@
 
 See the example source for more information.
 
+## File icons license
+
+Some file icons included with this package can have a license and its use for free or commercial purpose could be forbidden.
+
 ## Animated demo
 
 ![](demo.gif)
