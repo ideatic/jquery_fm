@@ -100,6 +100,11 @@
                 .prepend('<i class="icon-plus"></i>')
                 .append($('<input type="file" name="files[]" multiple="">').change(function () {
                     plugin._upload(this.files);
+
+                    //Reset input
+                    var inputClone = $(this).clone(true);
+                    $('<form></form>').append(inputClone)[0].reset();
+                    $(this).replaceWith(inputClone);
                 }))
                 .appendTo($tools);
 
@@ -353,7 +358,7 @@
                                 //Replace old file with the new one
                                 $element.find('.info').fadeOut('normal', function () {
                                     var $new = plugin._createFile(response.file);
-                                    $new.find('.info').hide().fadeIn( 'slow');
+                                    $new.find('.info').hide().fadeIn('slow');
                                     $element.replaceWith($new);
                                 });
                             }

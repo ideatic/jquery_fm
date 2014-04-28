@@ -5,12 +5,16 @@ abstract class jQueryFM_Helper
     public static function format_number($number, $decimals = 0)
     {
         $locale = localeconv();
-
         $dec_point = $locale['decimal_point'];
         $thousands_sep = $locale['thousands_sep'];
 
+        $result = number_format($number, $decimals, $dec_point, $thousands_sep);
 
-        return rtrim(number_format($number, $decimals, $dec_point, $thousands_sep), "0$dec_point");
+        if (strpos($result, $dec_point)) {
+            $result = rtrim(rtrim($result, '0'), $dec_point);
+        }
+
+        return $result;
     }
 
     public static function format_size($size, $kilobyte = 1024, $format = '%size% %unit%')
