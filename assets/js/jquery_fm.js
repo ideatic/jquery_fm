@@ -1,67 +1,16 @@
 /**
- * A modified (improved?) version of the jQuery plugin design pattern.
+ * jquery_fm
+ * Advanced file manager and upload widget
+ *
+ * @author Javier Marín <contacto@ideatic.net>
+ *
+ * Based on jQuery plugin design pattern by
  * https://gist.github.com/GrantDG/5703502
- * See http://docs.jquery.com/Plugins/Authoring (near the bottom) for details.
- *
- * ADVANTAGES OF EITHER FRAMEWORK:
- * - Encapsulates additional plugin action methods without polluting the jQuery.fn namespace
- * - Ensures ability to use '$' even in compat modes
- *
- * ADVANTAGES OF THIS VERSION
- * - Maintains object state between subsequent action calls, thus allowing arbitrary
- *   properties' values to be remembered
- * - Plugin object's method scope behaves like normal javascript objects in that
- *   'this' refers to the actual *object* rather than the jquery target for the plugin.
- *   This makes it more natural to work with object properties.  Note the jquery target
- *   is still available as this.$T within the object
  */
 (function ($) {
     "use strict";
-
-    /**
-     * The plugin namespace, ie for $('.selector').myPluginName(options)
-     *
-     * Also the id for storing the object state via $('.selector').data()
-     */
     var PLUGIN_NS = 'jquery_fm';
 
-    /*###################################################################################
-     * PLUGIN BRAINS
-     *  
-     * INSTRUCTIONS:
-     * 
-     * To init, call...
-     * $('selector').myPluginName(options) 
-     * 
-     * Some time later...  
-     * $('selector').myPluginName('myActionMethod')
-     *  
-     * DETAILS:
-     * Once inited with $('...').myPluginName(options), you can call
-     * $('...').myPluginName('myAction') where myAction is a method in this
-     * class.
-     * 
-     * The scope, ie "this", **is the object itself**.  The jQuery match is stored
-     * in the property this.$T.  In general this value should be returned to allow
-     * for jQuery chaining by the user.
-     *  
-     * Methods which begin with underscore are private and not 
-     * publically accessible.
-     * 
-     * CHECK IT OUT...
-     * var mySelecta = 'DIV';
-     * jQuery(mySelecta).myPluginName();
-     * jQuery(mySelecta).myPluginName('publicMethod');
-     * jQuery(mySelecta).myPluginName('_privateMethod');  
-     *
-     *###################################################################################*/
-
-    /**
-     * Quick setup to allow property and constant declarations ASAP
-     * IMPORTANT!  The jquery hook (bottom) will return a ref to the target for chaining on init
-     * BUT it requires a reference to this newly instantiated object too! Hence "return this" over "return this.$T"
-     * The later is encouraged in all public API methods.
-     */
     var Plugin = function (target, options) {
         this.$T = $(target);
 
@@ -566,7 +515,7 @@
                     uploading: true
                 }).hide().appendTo(plugin.$files).show('slow');
 
-                var $icon = $file_html.addClass('uploading').attr('title', plugin._options['strings']['uploading']);
+                var $icon = $file_html.addClass('uploading').attr('title', plugin._options['strings']['uploading']).find('.icon');
 
                 //Preview icon
                 if (typeof FileReader != 'undefined' && file.type.match('image.*')) {
@@ -585,24 +534,38 @@
                 var validation = plugin._validate(file);
                 if (validation.success) {
                     //Post XHR request
-                    $file_html.find('.icon').loader(1)
-
+                    var finished = false;
                     var data = new FormData();
                     data.append('folder', folder || plugin._currentFolder);
                     data.append('files[]', file);
                     var xhr = plugin._request($file_html, 'upload', data, function (response) {
                         //Success
-                        $icon.loader(false).removeClass('uploading');
-                        if (response.file) {
-                            var $new = plugin._createFile(response.file).hide().fadeTo("slow", 1);
-                            $file_html.replaceWith($new);
-                        }
+                        finished = true;
+                        $icon.loader(100).loader(false, function () {
+                            $file_html.removeClass('uploading');
+                            if (response.file) {
+                                $file_html.replaceWith(plugin._createFile(response.file));
+                            }
+                        });
                     }, function () {
                         //Error
+                        finished = true;
                         $icon.loader(false);
                     }, function (status) {
-                        //Progress
-                        $icon.loader(status.progress * 0.85);//Keep the 15% for server side processing
+                        //Progress                   
+                        if (status.progress == 100) {
+                            //Animate server-side processing
+                            $({val: 85}).animate({val: 100}, {
+                                duration: 3000,
+                                step: function () {
+                                    if (!finished) {
+                                        $icon.loader(this.val);
+                                    }
+                                }
+                            });
+                        } else {
+                            $icon.loader(status.progress * 0.85);//Keep the 15% for server side processing
+                        }
                     });
 
                     //Cancel
@@ -662,10 +625,17 @@
                 }
             });
 
+            //Show modal and free memory on close
             $modal.modal('show').on('hidden', function () {
                 $modal.remove();
             });
-            $response.focus();
+
+            //Focus main element
+            if($response.length>0){
+                $response.focus();
+            } else {
+                $acceptButton.focus();
+            }
         } else {
             //Use standard prompt and confirm functions
             var resp = promptValue ? prompt(text, promptValue === true ? '' : promptValue) : confirm(text);
@@ -734,7 +704,7 @@
  */
 (function ($) {
 
-    $.fn.loader = function (progress) {
+    $.fn.loader = function (progress, onfinish) {
 
         var add_prefixes = function (styles, properties) {
             for (var name in properties) {
@@ -798,6 +768,9 @@
                             $pie_wrapper.remove();
                             $this.removeData('loader-pie loader-progress');
                             clearInterval(intervalId);
+                            if (onfinish) {
+                                onfinish();
+                            }
                         }
                     });
             } else {

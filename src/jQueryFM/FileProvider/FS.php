@@ -20,9 +20,11 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     protected function _get_folder_path($folder)
     {
         if ($this->manager->allow_folders) {
-            $real_folder = realpath($this->path . DIRECTORY_SEPARATOR . str_replace('..', '', $folder));
+            $folder = str_replace("\x00", '', (string) $folder); //Protect null bytes (http://www.php.net/manual/en/security.filesystem.nullbytes.php)
+            $folder = str_replace('..', '', $folder); //Protect relative paths
+            $real_folder = $this->path . DIRECTORY_SEPARATOR . $folder;
         } else {
-            $real_folder = realpath($this->path);
+            $real_folder = $this->path;
         }
 
         return $real_folder;
@@ -110,7 +112,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         $folder_path = $this->_get_folder_path($folder);
 
         if (!is_dir($folder_path)) {
-            if (!mkdir($folder_path, 0755)) {
+             if (!$folder_path || !mkdir($folder_path, 0755, true)) {
                 throw new RuntimeException("Destination path '$folder_path' cannot be created");
             }
         }
