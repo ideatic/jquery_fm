@@ -9,6 +9,7 @@
     }
   }
   */
+  /* disable boostrap2 icons */
   /* '' */
   /* '' */
   /* '' */
@@ -123,7 +124,7 @@
 }
 .jquery_fm .drag-drop-message {
   float: right;
-  margin-top: 128px;
+  margin-top: 10px;
   text-align: center;
 }
 .jquery_fm .drag-drop-message i {
@@ -227,6 +228,12 @@
   /* font-size: 120%; */
   /* Uncomment for 3D effect */
   /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+}
+.jquery_fm [class^="icon-"],
+.jquery_fm [class*=" icon-"] {
+  background-image: none;
+  height: auto;
+  width: auto;
 }
 .jquery_fm .icon-cancel:before {
   content: '\e805';
