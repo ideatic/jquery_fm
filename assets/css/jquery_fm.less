@@ -139,6 +139,10 @@
       font-size: 85%;
       color: #999;
     }
+
+    @media (max-width: 768px) {
+      display: none;//Hide drag drop message on phones, tablets, and small windows
+    }
   }
 
   .upload-tools {
@@ -167,7 +171,6 @@
 
   //Breadcrumb
   .breadcrumb {
-
     padding: 8px 15px;
     margin: 0 0 20px;
     list-style: none;
@@ -264,7 +267,6 @@
     /* Uncomment for 3D effect */
     /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
   }
-
 
   /* disable boostrap2 icons */
   [class^="icon-"], [class*=" icon-"] {
@@ -551,10 +553,6 @@
 
 .modal-footer .btn-group .btn + .btn {
   margin-left: -1px;
-}
-
-.modal-footer .btn-block + .btn-block {
-  margin-left: 0;
 }
 
 @media (min-width: 768px) {

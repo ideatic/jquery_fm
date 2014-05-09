@@ -136,6 +136,11 @@
   font-size: 85%;
   color: #999;
 }
+@media (max-width: 768px) {
+  .jquery_fm .drag-drop-message {
+    display: none;
+  }
+}
 .jquery_fm .upload-tools {
   text-align: right;
   margin-top: 10px;
@@ -491,9 +496,6 @@
 }
 .modal-footer .btn-group .btn + .btn {
   margin-left: -1px;
-}
-.modal-footer .btn-block + .btn-block {
-  margin-left: 0;
 }
 @media (min-width: 768px) {
   .modal-dialog {
