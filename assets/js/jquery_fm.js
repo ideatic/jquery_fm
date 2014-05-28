@@ -393,6 +393,10 @@
                 .prepend('<i class="icon-edit"></i>')
                 .click(function () {
                     plugin._ask(plugin._options['strings']["rename"], plugin._options['strings']["prompt_newname"], fileData.name, function (newName) {
+                        if (fileData.name == newName) {
+                            return;
+                        }
+                        
                         plugin._request($file, 'rename', {
                             file: fileData.name,
                             destName: newName
@@ -631,7 +635,7 @@
             });
 
             //Focus main element
-            if($response.length>0){
+            if ($response.length > 0) {
                 $response.focus();
             } else {
                 $acceptButton.focus();
