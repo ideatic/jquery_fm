@@ -89,6 +89,7 @@ class jQueryFM_FileManager
         'error' => 'Error processing the request',
         'error_filetype' => 'File type not allowed',
         'error_maxsize' => 'File is too large',
+        'error_rename' => 'Error renaming the file, please check that the new name is unique for the current folder and try again',
     );
 
     /**
@@ -219,14 +220,16 @@ class jQueryFM_FileManager
                             if ($created_file) {
                                 $response['file'] = $this->_export_file($created_file);
                             } else {
-                                throw new FileManagerException('create_error');
+                                throw new FileManagerException('create');
                             }
                         }
                     }
                     break;
                 case 'download':
-                    if (!$this->provider->download($file)) {
-                        throw new FileManagerException('download_error');
+                    if ($this->provider->download($file)) {
+                        return true; //When download is successful, we cannot send more data
+                    } else {
+                        throw new FileManagerException('download');
                     }
 
                     break;
@@ -240,7 +243,7 @@ class jQueryFM_FileManager
                     if ($item) {
                         $response['file'] = $this->_export_file($item);
                     } else {
-                        throw new FileManagerException('rename_error');
+                        throw new FileManagerException('rename');
                     }
 
                     break;
@@ -251,7 +254,7 @@ class jQueryFM_FileManager
                     }
 
                     if (!$this->provider->delete($file)) {
-                        throw new FileManagerException('delete_error');
+                        throw new FileManagerException('delete');
                     }
 
                     break;
@@ -277,7 +280,7 @@ class jQueryFM_FileManager
                     if ($item) {
                         $response['file'] = $this->_export_file($item);
                     } else {
-                        throw new FileManagerException('create_folder_error');
+                        throw new FileManagerException('create_folder');
                     }
 
                     break;
@@ -288,10 +291,10 @@ class jQueryFM_FileManager
             }
         } catch (FileManagerException $err) {
             $response['status'] = 'error';
-            $response['message'] = $err->getMessage();
+            $response['message'] = 'error_' . $err->getMessage();
         } catch (Exception $er) {
             $response['status'] = 'error';
-            $response['message'] = 'unknown_error';
+            $response['message'] = 'error';
         }
 
 
@@ -302,8 +305,8 @@ class jQueryFM_FileManager
 
             header('Content-type: application/json');
             echo json_encode($response);
-        } 
-        
+        }
+
         return $response['status'] == 'success';
     }
 

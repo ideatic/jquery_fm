@@ -172,7 +172,7 @@
     }
 
     /** #### PRIVATE METHODS #### */
-    Plugin.prototype._request = function (file, action, params, onsuccess, onfail, onprogress) {
+    Plugin.prototype._request = function ($file_elm, action, params, onsuccess, onfail, onprogress) {
         var plugin = this;
 
         var data;
@@ -219,8 +219,8 @@
             cache: false,
             success: function (data) {
                 //Remove error badge
-                if (file) {
-                    $(file).find('.error').fadeOut('slow', function () {
+                if ($file_elm) {
+                    $($file_elm).find('.error').fadeOut('slow', function () {
                         $(this).remove();
                     });
                 }
@@ -230,11 +230,14 @@
                     onsuccess(data);
                 }
             },
-            error: function () {
-                if (file) {
-                    plugin._setError($(file));
+            error: function (jqXHR) {
+                var error_id = jqXHR.responseJSON && jqXHR.responseJSON.message;
+                var message = plugin._options['strings'][error_id] || plugin._options['strings']['error'];
+
+                if ($file_elm) {
+                    plugin._setError($($file_elm), message);
                 } else {
-                    var $message = $('<p />').append($('<span class="label label-danger" />').text(plugin._options['strings']['error']))
+                    var $message = $('<p />').append($('<span class="label label-danger" />').text(message))
                         .hide()
                         .prependTo(plugin.$fm)
                         .fadeIn();
@@ -258,14 +261,13 @@
     Plugin.prototype._setError = function ($file, message) {
         var plugin = this;
 
-        var title = message || plugin._options['strings']['error'];
         $('<span class="error" />').text('!')
-            .attr('title', title)
+            .attr('title', message)
             .hide()
             .prependTo($file)
             .fadeOut("fast").fadeIn("fast").fadeOut("fast").fadeIn("fast").fadeOut("fast").fadeIn("fast");//Blink error
 
-        $file.attr('title', title).find('.cancel').remove();
+        $file.attr('title', message).find('.cancel').remove();
     }
 
     Plugin.prototype._findByName = function (name) {
@@ -326,7 +328,7 @@
 
     Plugin.prototype._createFile = function (fileData) {
         var plugin = this;
-        var $file = $('<div class="file" />')
+        var $file_elm = $('<div class="file" />')
             .data('file', fileData);
 
         //Icon
@@ -354,11 +356,11 @@
             .append($('<img />').attr('draggable', false).attr('src', fileData['icon'] || src).bind('error', function (event) {
                 $(this).unbind(event).attr('src', plugin._options['icons_url'] + "/unknown.png");
             }))
-            .appendTo($file);
+            .appendTo($file_elm);
 
         //Name and info
-        $('<h4 />').attr('title', fileData['name']).text(fileData['name']).appendTo($file);
-        $('<div class="info" />').html(fileData['info']).appendTo($file);
+        $('<h4 />').attr('title', fileData['name']).text(fileData['name']).appendTo($file_elm);
+        $('<div class="info" />').html(fileData['info']).appendTo($file_elm);
 
         //Tools
         var $tools = $('<div class="tools" />');
@@ -375,10 +377,10 @@
                 .prepend('<i class="icon-trash"></i>')
                 .click(function () {
                     plugin._ask(plugin._options['strings']["delete"], plugin._options['strings']["confirm_delete"], false, function () {
-                        plugin._request($file, 'delete', {file: fileData.name}, function () {
+                        plugin._request($file_elm, 'delete', {file: fileData.name}, function () {
                             //Remove file from explorer
-                            $file.hide('slow', function () {
-                                $file.remove();
+                            $file_elm.hide('slow', function () {
+                                $file_elm.remove();
                             });
                         });
                     });
@@ -396,15 +398,15 @@
                         if (fileData.name == newName) {
                             return;
                         }
-                        
-                        plugin._request($file, 'rename', {
+
+                        plugin._request($file_elm, 'rename', {
                             file: fileData.name,
                             destName: newName
                         }, function (response) {
                             //Replace old file with the new one
-                            $file.fadeOut('normal', function () {
+                            $file_elm.fadeOut('normal', function () {
                                 var $new = plugin._createFile(response.file).hide().fadeTo("slow", 1);
-                                $file.replaceWith($new);
+                                $file_elm.replaceWith($new);
                             });
                         });
                     });
@@ -415,12 +417,12 @@
         }
 
         if ($tools.children().length > 0) {
-            $tools.appendTo($file);
+            $tools.appendTo($file_elm);
         }
 
         //Drag & drop
         if (plugin._options['allow_folders']) {
-            $file.attr('draggable', true)
+            $file_elm.attr('draggable', true)
                 .bind('dragstart', function (e) {
                     if (!fileData['uploading']) {
                         e.dataTransfer.setData("Text", fileData.name);
@@ -431,11 +433,11 @@
 
             //Enable drag&drop from other files to this folder
             if (fileData['is_folder']) {
-                plugin._prepareFileDrag($file, plugin._currentFolder + '/' + fileData['name']);
+                plugin._prepareFileDrag($file_elm, plugin._currentFolder + '/' + fileData['name']);
             }
         }
 
-        return $file;
+        return $file_elm;
     }
 
     Plugin.prototype._updateBreadcrumb = function () {
@@ -512,14 +514,14 @@
         for (var i = 0; i < files.length; i++) {
             (function (file) {
                 //Show upload progres
-                var $file_html = plugin._createFile({
+                var $file_elm = plugin._createFile({
                     name: file.name || plugin._options['strings']['unnamed'],
                     info: file.size ? (file.size / 1024 | 0) + ' KB' : '',
                     is_folder: false,
                     uploading: true
                 }).hide().appendTo(plugin.$files).show('slow');
 
-                var $icon = $file_html.addClass('uploading').attr('title', plugin._options['strings']['uploading']).find('.icon');
+                var $icon = $file_elm.addClass('uploading').attr('title', plugin._options['strings']['uploading']).find('.icon');
 
                 //Preview icon
                 if (typeof FileReader != 'undefined' && file.type.match('image.*')) {
@@ -542,13 +544,13 @@
                     var data = new FormData();
                     data.append('folder', folder || plugin._currentFolder);
                     data.append('files[]', file);
-                    var xhr = plugin._request($file_html, 'upload', data, function (response) {
+                    var xhr = plugin._request($file_elm, 'upload', data, function (response) {
                         //Success
                         finished = true;
                         $icon.loader(100).loader(false, function () {
-                            $file_html.removeClass('uploading');
+                            $file_elm.removeClass('uploading');
                             if (response.file) {
-                                $file_html.replaceWith(plugin._createFile(response.file));
+                                $file_elm.replaceWith(plugin._createFile(response.file));
                             }
                         });
                     }, function () {
@@ -573,14 +575,14 @@
                     });
 
                     //Cancel
-                    $file_html.find('.cancel').click(function () {
+                    $file_elm.find('.cancel').click(function () {
                         xhr.abort();
-                        $file_html.hide('slow');
+                        $file_elm.hide('slow');
                         return false;
                     });
                 } else {
                     //Show error
-                    plugin._setError($file_html, validation.message);
+                    plugin._setError($file_elm, validation.message);
                 }
 
             })(files[i]);

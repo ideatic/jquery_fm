@@ -23,7 +23,6 @@ abstract class jQueryFM_FileProvider_Base
      */
     public abstract function read($folder = '/', $filter = '*');
 
-
     /**
      * Save the uploaded file in the given folder.
      *

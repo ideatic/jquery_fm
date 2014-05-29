@@ -77,6 +77,9 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         return preg_replace("/[^a-zA-Z0-9\-\_\ \.]+/", '', $name);
     }
 
+    /**
+     *  {@inheritDoc}
+     */
     public function read($folder = '/', $filter = '*')
     {
         $path = $this->_get_folder_path($folder);
@@ -103,10 +106,12 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             }
         }
 
-
         return array_merge($folders, $files);
     }
 
+    /**
+     *  {@inheritDoc}
+     */
     public function create_file($folder, $name, $tmp_path)
     {
         $folder_path = $this->_get_folder_path($folder);
@@ -136,6 +141,9 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         return false;
     }
 
+    /**
+     *  {@inheritDoc}
+     */
     public function create_folder($folder, $name)
     {
         //Sanitize destination file
@@ -152,6 +160,9 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         return false;
     }
 
+    /**
+     *  {@inheritDoc}
+     */
     public function rename(FileManagerItem $file, $new_folder, $new_name)
     {
         //Sanitize destination file
@@ -168,6 +179,9 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         return false;
     }
 
+    /**
+     *  {@inheritDoc}
+     */
     public function delete(FileManagerItem $file)
     {
 
@@ -178,6 +192,9 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         }
     }
 
+    /**
+     *  {@inheritDoc}
+     */
     public function download(FileManagerItem $file, $force = true)
     {
         if (!file_exists($file->path)) {
