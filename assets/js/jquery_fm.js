@@ -706,7 +706,7 @@
 
 
 /**
- * jQuery Loader Pie Plugin
+ * jQuery Pie Loader Plugin
  */
 (function ($) {
 
@@ -735,13 +735,13 @@
 
 
             //Create required markup
-            var $pie_wrapper = $this.data('loader-pie');
+            var $pie = $this.data('loader-pie');
             var intervalId;
             var firstRun = false;
-            if (!$pie_wrapper || $pie_wrapper.parent().length == 0) {
+            if (!$pie || $pie.parent().length == 0) {
                 firstRun = true;
-                $pie_wrapper = $('<div><div><div><div class="loader-pie"></div></div><div class="loader-pie"></div></div></div>').prependTo($this);
-                $this.data('loader-pie', $pie_wrapper);
+                $pie = $('<div><div><div class="loader-pie"></div></div><div class="loader-pie"></div></div>').hide().prependTo($this);
+                $this.data('loader-pie', $pie);
 
                 //Detect element resize
                 var lastSize = {
@@ -757,13 +757,12 @@
                 }, 200);
             }
             $this.data('loader-progress', progress);
-            var $pie = $pie_wrapper.children().first();
 
-            var size = Math.min($this.width(), $this.height());
-            if (progress === false) {
+
+            var animate_pie_size = function (destSize, complete) {
                 $pie.animate(
                     {
-                        fontSize: size * 2
+                        fontSize: destSize
                     },
                     {
                         duration: 400,
@@ -771,37 +770,38 @@
                             center($pie);
                         },
                         complete: function () {
-                            $pie_wrapper.remove();
-                            $this.removeData('loader-pie loader-progress');
-                            clearInterval(intervalId);
-                            if (onfinish) {
-                                onfinish();
+                            if (complete) {
+                                complete();
                             }
                         }
                     });
+            }
+
+            //Apply progress
+            if (progress === false) {
+                //Remove pie with animation
+                animate_pie_size(0, function () {
+                    $pie.remove();
+                    $this.removeData('loader-pie loader-progress');
+                    clearInterval(intervalId);
+                    if (onfinish) {
+                        onfinish();
+                    }
+                });
             } else {
                 progress = Math.min(progress, 100);
 
                 //Apply styles
                 $this.css('position', 'relative');
 
-                //Pie wrapper
-                $pie_wrapper.stop(true, true).css({
-                    overflow: 'hidden',
-                    width: size + 'px',
-                    height: size + 'px',
+                //Pie
+                var size = Math.min($this.width(), $this.height()) / 1.618;
+                $pie.css({
                     fontSize: size + 'px',
+                    width: '1em',
+                    height: '1em',
                     zIndex: 99999
                 });
-                center($pie_wrapper);
-
-                //Pie
-                $pie.css({
-                    fontSize: (1 / 1.618) + 'em',
-                    width: '1em',
-                    height: '1em'
-                });
-                center($pie);
 
 
                 //Rotating slide
@@ -834,16 +834,10 @@
 
                 if (firstRun) {
                     //Animate pie creation
-                    $pie_wrapper.css('fontSize', 0).animate(
-                        {
-                            fontSize: size
-                        },
-                        {
-                            duration: 400,
-                            step: function (fs) {
-                                center($pie);
-                            }
-                        });
+                    $pie.show().css('fontSize', 0);
+                    animate_pie_size(size);
+                } else {
+                    center($pie);
                 }
             }
         });
