@@ -64,6 +64,12 @@ class jQueryFM_FileManager
     public $image_preview_limit = 512000;
 
     /**
+     * Allow users to drag new files anywhere in the document body
+     * @var bool
+     */
+    public $drag_anywhere = false;
+
+    /**
      * Localizable strings
      * @var array
      */
@@ -127,6 +133,7 @@ class jQueryFM_FileManager
             'accept_file_types' => $this->accept_file_types,
             'ajax_endpoint' => $this->ajax_endpoint,
             'icons_url' => $this->icons_url,
+            'drag_anywhere' => $this->drag_anywhere,
             'strings' => $this->strings,
             'files' => $files
         );

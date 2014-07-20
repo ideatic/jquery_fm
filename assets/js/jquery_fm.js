@@ -54,7 +54,7 @@
                     var inputClone = $(this).clone(true);
                     $('<form></form>').append(inputClone)[0].reset();
                     $(this).replaceWith(inputClone);
-                }))
+                })) 
                 .appendTo($tools);
 
             //Add files using drag and drop
@@ -63,7 +63,8 @@
                 // Drop the item in the drop box.
                 jQuery.event.props.push('dataTransfer');
 
-                $explorer.bind('drop dragenter dragover',function (e) {
+                var $dragReceiver = settings['drag_anywhere'] ? $('body') : $explorer;
+                $dragReceiver.bind('drop dragenter dragover', function (e) {
                     var dataTransfer = e.originalEvent && e.originalEvent.dataTransfer;
 
                     if (dataTransfer && $.inArray('Files', dataTransfer.types) !== -1) {
@@ -73,11 +74,11 @@
                             plugin._upload(dataTransfer.files);
                         } else {
                             dataTransfer.dropEffect = 'copy';
-                            $explorer.toggleClass('drag-hover', true);
+                            $dragReceiver.toggleClass('drag-hover', true);
                         }
                     }
                 }).bind('drop mouseleave dragend dragleave', function (e) {
-                    $explorer.toggleClass('drag-hover', false);
+                    $dragReceiver.toggleClass('drag-hover', false);
                 });
 
                 //Show drag drop message
@@ -169,7 +170,7 @@
             });
         }
         return this.$T;        // support jQuery chaining
-    }
+    };
 
     /** #### PRIVATE METHODS #### */
     Plugin.prototype._request = function ($file_elm, action, params, onsuccess, onfail, onprogress) {
@@ -211,7 +212,7 @@
         }
 
 
-        var ajax = $.extend(ajax, {
+        ajax = $.extend(ajax, {
             type: 'POST',
             url: plugin._options['ajax_endpoint'],
             data: data,
@@ -255,12 +256,10 @@
             }
         });
 
-        return  $.ajax(ajax);
-    }
+        return $.ajax(ajax);
+    };
 
     Plugin.prototype._setError = function ($file, message) {
-        var plugin = this;
-
         $('<span class="error" />').text('!')
             .attr('title', message)
             .hide()
@@ -268,7 +267,7 @@
             .fadeOut("fast").fadeIn("fast").fadeOut("fast").fadeIn("fast").fadeOut("fast").fadeIn("fast");//Blink error
 
         $file.attr('title', message).find('.cancel').remove();
-    }
+    };
 
     Plugin.prototype._findByName = function (name) {
 
@@ -276,7 +275,7 @@
         return plugin.$files.find('.file').filter(function () {
             return $(this).data('file').name == name;
         });
-    }
+    };
 
     /**
      * Prepare the given element so that the dragged files are moved to the specified destination folder
@@ -286,7 +285,7 @@
         var plugin = this;
 
         if (plugin._enableDragDrop && plugin._options['allow_folders']) {
-            $element.bind('drop dragenter dragover',function (e) {
+            $element.bind('drop dragenter dragover', function (e) {
                 var dataTransfer = e.originalEvent && e.originalEvent.dataTransfer;
 
                 if (dataTransfer && $.inArray(PLUGIN_NS, dataTransfer.types) !== -1) {
@@ -324,7 +323,7 @@
                 $element.toggleClass('drag-hover', false);
             });
         }
-    }
+    };
 
     Plugin.prototype._createFile = function (fileData) {
         var plugin = this;
@@ -438,7 +437,7 @@
         }
 
         return $file_elm;
-    }
+    };
 
     Plugin.prototype._updateBreadcrumb = function () {
         if (!this._options['allow_folders']) {
@@ -488,7 +487,7 @@
                 }
             }
         }
-    }
+    };
 
     //Validate a file, checking if it's fit to be uploaded
     Plugin.prototype._validate = function (file) {
@@ -504,9 +503,9 @@
 
         return {
             success: message == '',
-            message: message,
+            message: message
         };
-    }
+    };
 
     Plugin.prototype._upload = function (files, folder) {
         var plugin = this;
@@ -587,7 +586,7 @@
 
             })(files[i]);
         }
-    }
+    };
 
     Plugin.prototype._ask = function (title, text, promptValue, onOK, onCancel) {
         var plugin = this;
@@ -596,20 +595,18 @@
             //Create markup
             var $response = promptValue !== false ? $('<input type="text" id="response" value="' + (promptValue === true ? '' : promptValue) + '" style="width:85%" autofocus />') : $();
             var $modal = $('<div class="modal fade"> \
-                <div class="modal-dialog"> \
-                <div class="modal-content"> \
-                    <div class="modal-header"> \
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> \
-                        <h4 class="modal-title"></h4> \
-                    </div> \
-                    <div class="modal-body"></div> \
-                    <div class="modal-footer"> \
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
-                        <button type="button" class="btn btn-primary" data-dismiss="modal">Save changes</button> \
-                    </div> \
-                </div><!-- /.modal-content --> \
-                </div><!-- /.modal-dialog --> \
-                </div><!-- /.modal -->').first();//Ignore comment
+<div class="modal-dialog"> \
+  <div class="modal-content"> \
+  <div class="modal-header"> \
+   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> \
+   <h4 class="modal-title"></h4> \
+  </div> \
+<div class="modal-body"></div> \
+  <div class="modal-footer"> \
+ <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
+ <button type="button" class="btn btn-primary" data-dismiss="modal">Save changes</button> \
+</div> \
+</div></div></div>').first();//Ignore comment
             $modal.find('.modal-title').text(title);
             $modal.find('.modal-body').text(text).append('<br/><br/>').append($response);
 
@@ -653,7 +650,7 @@
                 onCancel();
             }
         }
-    }
+    };
 
 
     /*###################################################################################
@@ -667,7 +664,7 @@
      * Notice, myActionMethod mustn't start with an underscore (_) as this is used to
      * indicate private methods on the PLUGIN class.
      */
-    $.fn[ PLUGIN_NS ] = function (methodOrOptions) {
+    $.fn[PLUGIN_NS] = function (methodOrOptions) {
         if (!$(this).length) {
             return $(this);
         }
@@ -676,10 +673,10 @@
         // CASE: action method (public method on PLUGIN class)        
         if (instance
             && methodOrOptions.indexOf('_') != 0
-            && instance[ methodOrOptions ]
-            && typeof (instance[ methodOrOptions ]) == 'function') {
+            && instance[methodOrOptions]
+            && typeof (instance[methodOrOptions]) == 'function') {
 
-            return instance[ methodOrOptions ].apply(instance, Array.prototype.slice.call(arguments, 1));
+            return instance[methodOrOptions].apply(instance, Array.prototype.slice.call(arguments, 1));
 
 
             // CASE: argument is options object or empty = initialise
@@ -810,17 +807,17 @@
                     width: '.5em',
                     height: '1em',
                     position: 'absolute',
-                    left: progress > 50 ? 0 : '.5em',
+                    left: progress > 50 ? 0 : '.5em'
                 }).children().first().css(add_prefixes({
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: '.5em 0 0 .5em',
-                        position: 'absolute',
-                        left: progress > 50 ? 0 : '-.5em',
-                    }, {
-                        'transform-origin': 'right center',
-                        'transform': 'rotate(' + (360 / 100 * progress) + 'deg)'
-                    }));
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '.5em 0 0 .5em',
+                    position: 'absolute',
+                    left: progress > 50 ? 0 : '-.5em'
+                }, {
+                    'transform-origin': 'right center',
+                    'transform': 'rotate(' + (360 / 100 * progress) + 'deg)'
+                }));
 
                 //Fixed slice
                 $pie.children().eq(1).css({
@@ -829,7 +826,7 @@
                     height: '1em',
                     borderRadius: '0 .5em .5em 0',
                     position: 'absolute',
-                    left: '.5em',
+                    left: '.5em'
                 });
 
                 if (firstRun) {
