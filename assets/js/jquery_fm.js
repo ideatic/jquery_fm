@@ -54,7 +54,7 @@
                     var inputClone = $(this).clone(true);
                     $('<form></form>').append(inputClone)[0].reset();
                     $(this).replaceWith(inputClone);
-                })) 
+                }))
                 .appendTo($tools);
 
             //Add files using drag and drop
