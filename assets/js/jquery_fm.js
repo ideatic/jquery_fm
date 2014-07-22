@@ -132,9 +132,14 @@
         }
 
         //Load files and breadcrumb
-        $(settings.files).each(function () {
-            $files.append(plugin._createFile(this));
-        });
+        if (typeof settings.files === "undefined") {
+            plugin.navigateTo('/');
+        } else {
+            $(settings.files).each(function () {
+                $files.append(plugin._createFile(this));
+            });
+        }
+
         plugin._updateBreadcrumb();
     };
 
@@ -221,7 +226,7 @@
             success: function (data) {
                 //Remove error badge
                 if ($file_elm) {
-                    $($file_elm).find('.error').fadeOut('slow', function () {
+                    $file_elm.find('.error').fadeOut('slow', function () {
                         $(this).remove();
                     });
                 }
@@ -236,7 +241,7 @@
                 var message = plugin._options['strings'][error_id] || plugin._options['strings']['error'];
 
                 if ($file_elm) {
-                    plugin._setError($($file_elm), message);
+                    plugin._setError($file_elm, message);
                 } else {
                     var $message = $('<p />').append($('<span class="label label-danger" />').text(message))
                         .hide()

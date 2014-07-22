@@ -117,7 +117,7 @@ class jQueryFM_FileManager
      * Gets the required settings to initialize the JS file manager
      * @return array
      */
-    protected function _initialization_settings()
+    public function js_config()
     {
         $files = array();
 
@@ -154,7 +154,7 @@ class jQueryFM_FileManager
         ob_start();
         ?>
         <script>
-            jQuery('#<?= $id ?>').jquery_fm(<?= json_encode($this->_initialization_settings()) ?>);
+            jQuery('#<?= $id ?>').jquery_fm(<?= json_encode($this->js_config()) ?>);
         </script>
         <?php
         return ob_get_clean();
