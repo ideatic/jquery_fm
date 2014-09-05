@@ -59,8 +59,7 @@
 
             //Add files using drag and drop
             if (plugin._enableDragDrop) {
-                // Makes sure the dataTransfer information is sent when we
-                // Drop the item in the drop box.
+                // Makes sure the dataTransfer information is sent when we drop items
                 jQuery.event.props.push('dataTransfer');
 
                 var $dragReceiver = settings['drag_anywhere'] ? $('body') : $explorer;
@@ -297,7 +296,7 @@
                     e.preventDefault();
 
                     if (e.type == 'drop') {
-                        var srcName = e.dataTransfer.getData(PLUGIN_NS);
+                        var srcName = dataTransfer.getData(PLUGIN_NS);
                         var $srcFile = plugin._findByName(srcName);
 
                         plugin._request($srcFile, 'rename', {
@@ -598,7 +597,14 @@
 
         if (jQuery().modal) {
             //Create markup
-            var $response = promptValue !== false ? $('<input type="text" id="response" value="' + (promptValue === true ? '' : promptValue) + '" style="width:85%" autofocus />') : $();
+            var $response = promptValue !== false ? $('<input />', {
+                type: 'text',
+                id: 'response',
+                'class': 'form-control',
+                value: promptValue === true ? '' : promptValue,
+                style: 'width:85%',
+                autofocus: true 
+            }) : $();
             var $modal = $('<div class="modal fade"> \
 <div class="modal-dialog"> \
   <div class="modal-content"> \
