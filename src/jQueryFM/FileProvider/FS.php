@@ -17,10 +17,17 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         $this->path = $path;
     }
 
+    /**
+     * Get the real FS path for the given virtual folder
+     *
+     * @param $folder
+     *
+     * @return string
+     */
     protected function _get_folder_path($folder)
     {
-        if ($this->manager->allow_folders) {
-            $folder = str_replace("\x00", '', (string) $folder); //Protect null bytes (http://www.php.net/manual/en/security.filesystem.nullbytes.php)
+        if ($this->manager->allow_folders && $folder != '/' && $folder != '') {
+            $folder = str_replace("\x00", '', (string)$folder); //Protect null bytes (http://www.php.net/manual/en/security.filesystem.nullbytes.php)
             $folder = str_replace('..', '', $folder); //Protect relative paths
             $real_folder = $this->path . DIRECTORY_SEPARATOR . $folder;
         } else {
@@ -117,7 +124,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         $folder_path = $this->_get_folder_path($folder);
 
         if (!is_dir($folder_path)) {
-             if (!$folder_path || !mkdir($folder_path, 0755, true)) {
+            if (!$folder_path || !mkdir($folder_path, 0755, true)) {
                 throw new RuntimeException("Destination path '$folder_path' cannot be created");
             }
         }
@@ -166,14 +173,23 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     public function rename(FileManagerItem $file, $new_folder, $new_name)
     {
         //Sanitize destination file
-        $dest = $this->_get_folder_path($new_folder) . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
+        $dest_folder = $this->_get_folder_path($new_folder);
+        $dest_file = $dest_folder . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
+        $moving = dirname($file->path) != $dest_folder;
 
-        if (file_exists($file->path) && !file_exists($dest) && rename($file->path, $dest)) {
+        if ($moving && !is_dir($dest_folder)) {
+            //Create destination directory
+            if (!mkdir($dest_folder, 0755, true)) {
+                return false;
+            }
+        }
+
+        if (file_exists($file->path) && !file_exists($dest_file) && rename($file->path, $dest_file)) {
             //If directory changes, return directory info
-            if (dirname($file->path) != dirname($dest)) {
-                return $this->_populate_file_item(dirname($dest), $file->folder);
+            if ($moving) {
+                return $this->_populate_file_item($dest_folder, $file->folder);
             } else {
-                return $this->_populate_file_item($dest, $file->folder);
+                return $this->_populate_file_item($dest_file, $file->folder);
             }
         }
         return false;

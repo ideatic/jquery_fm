@@ -172,6 +172,13 @@ class jQueryFM_FileManager
             $data['icon'] = $file->icon;
         }
 
+        if (!$file->allow_edit) {
+            $data['allow_edit'] = $file->allow_edit;
+        }
+        if ($file->title) {
+            $data['title'] = $file->title;
+        }
+
         return $data;
     }
 
@@ -204,7 +211,8 @@ class jQueryFM_FileManager
             }
 
             //Apply action
-            switch ($_REQUEST['action']) {
+            $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
+            switch ($action) {
                 case 'upload':
                     if (!$this->allow_upload) {
                         throw new FileManagerException('unauthorized');
@@ -242,7 +250,7 @@ class jQueryFM_FileManager
                     break;
 
                 case 'rename':
-                    if (!$this->allow_editing) {
+                    if (!$this->allow_editing || !$file->allow_edit) {
                         throw new FileManagerException('unauthorized');
                     }
 
@@ -256,7 +264,7 @@ class jQueryFM_FileManager
                     break;
 
                 case 'delete':
-                    if (!$this->allow_editing) {
+                    if (!$this->allow_editing || !$file->allow_edit) {
                         throw new FileManagerException('unauthorized');
                     }
 
@@ -384,6 +392,17 @@ class FileManagerItem
      */
     public $icon;
 
+    /**
+     * File title to show on mouse hover
+     * @var string
+     */
+    public $title;
+
+    /**
+     * Allow item editing (renaming, deleting, etc.)
+     * @var bool
+     */
+    public $allow_edit = true;
 }
 
 class FileManagerException extends Exception

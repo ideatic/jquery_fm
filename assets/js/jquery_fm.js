@@ -90,7 +90,7 @@
             }
 
             // Add files using Clipboard paste
-            // The paste target element(s), by the default the complete document.
+            // The paste target element(s), by default the complete document
             $(document).on('paste', function (e) {
                 var items = e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.items,
                     files = [];
@@ -332,7 +332,7 @@
     Plugin.prototype._createFile = function (fileData) {
         var plugin = this;
         var $file_elm = $('<div class="file" />')
-            .data('file', fileData);
+            .data('file', fileData)
 
         //Icon
         var src, onclick;
@@ -365,6 +365,11 @@
         $('<h4 />').attr('title', fileData['name']).text(fileData['name']).appendTo($file_elm);
         $('<div class="info" />').html(fileData['info']).appendTo($file_elm);
 
+        //Title
+        if (fileData['title']) {
+            $file_elm.attr('title', fileData['title']);
+        }
+
         //Tools
         var $tools = $('<div class="tools" />');
         if (fileData['uploading']) {
@@ -373,7 +378,7 @@
                 .attr('title', plugin._options['strings']['cancel_upload'])
                 .prepend('<i class="icon-cancel"></i>')
                 .appendTo($tools);
-        } else if (plugin._options['allow_editing']) {
+        } else if (plugin._options['allow_editing'] && (!fileData.hasOwnProperty('allow_edit') || fileData['allow_edit'] == true)) {
             //Delete
             $('<a class="btn btn-sm btn-danger delete" />')
                 .attr('title', plugin._options['strings']['delete'])
@@ -603,7 +608,7 @@
                 'class': 'form-control',
                 value: promptValue === true ? '' : promptValue,
                 style: 'width:85%',
-                autofocus: true 
+                autofocus: true
             }) : $();
             var $modal = $('<div class="modal fade"> \
 <div class="modal-dialog"> \
