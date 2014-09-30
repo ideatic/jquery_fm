@@ -73,11 +73,11 @@
                             plugin._upload(dataTransfer.files);
                         } else {
                             dataTransfer.dropEffect = 'copy';
-                            $dragReceiver.toggleClass('drag-hover', true);
+                            $dragReceiver.add($explorer).toggleClass('drag-hover', true);
                         }
                     }
                 }).bind('drop mouseleave dragend dragleave', function (e) {
-                    $dragReceiver.toggleClass('drag-hover', false);
+                    $dragReceiver.add($explorer).toggleClass('drag-hover', false);
                 });
 
                 //Show drag drop message
@@ -108,7 +108,7 @@
         }
 
         //Create folder button
-        if (settings['allow_folders']) {
+        if (settings['allow_folders'] && settings['allow_editing']) {
             $('<a class="btn btn-info folder" />')
                 .text(settings['strings']['create_folder'])
                 .prepend('<i class="icon-folder-open"></i>')
@@ -170,6 +170,7 @@
                 //Show try again button when folder load fails
                 $files.stop(true, true).empty().append($('<a href="#" />').text(plugin._options['strings']['try_again']).click(function () {
                     plugin.navigateTo(folder);
+                    return false;
                 }));
             });
         }
@@ -332,7 +333,7 @@
     Plugin.prototype._createFile = function (fileData) {
         var plugin = this;
         var $file_elm = $('<div class="file" />')
-            .data('file', fileData)
+            .data('file', fileData);
 
         //Icon
         var src, onclick;

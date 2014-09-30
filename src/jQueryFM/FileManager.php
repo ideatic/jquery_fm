@@ -70,6 +70,12 @@ class jQueryFM_FileManager
     public $drag_anywhere = false;
 
     /**
+     * Preload files with the initial config, reducing the number of HTTP requests required to initialize the manager
+     * @var bool
+     */
+    public $preload = true;
+
+    /**
      * Localizable strings
      * @var array
      */
@@ -119,11 +125,6 @@ class jQueryFM_FileManager
      */
     public function js_config()
     {
-        $files = array();
-
-        foreach ($this->provider->read() as $f) {
-            $files[] = $this->_export_file($f);
-        }
         $settings = array(
             'allow_upload' => $this->allow_upload,
             'allow_editing' => $this->allow_editing,
@@ -134,9 +135,17 @@ class jQueryFM_FileManager
             'ajax_endpoint' => $this->ajax_endpoint,
             'icons_url' => $this->icons_url,
             'drag_anywhere' => $this->drag_anywhere,
-            'strings' => $this->strings,
-            'files' => $files
+            'strings' => $this->strings
         );
+
+        if ($this->preload) {
+            $files = array();
+
+            foreach ($this->provider->read() as $f) {
+                $files[] = $this->_export_file($f);
+            }
+            $settings['files'] = $files;
+        }
 
         return $settings;
     }
