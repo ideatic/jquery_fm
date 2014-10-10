@@ -39,6 +39,7 @@
         var $fm = plugin.$fm = $('<div class="jquery_fm" />').appendTo($(target).empty());
         var $explorer = plugin.$explorer = $('<div class="explorer" />').appendTo($fm);
         var $files = plugin.$files = $('<div class="files" />').appendTo($explorer);
+        plugin.onDestroy = [];
 
         //Load buttons and messages
         var $tools = $('<div class="upload-tools" />');
@@ -63,7 +64,7 @@
                 jQuery.event.props.push('dataTransfer');
 
                 var $dragReceiver = settings['drag_anywhere'] ? $('body') : $explorer;
-                $dragReceiver.bind('drop dragenter dragover', function (e) {
+                $dragReceiver.bind('drop.' + PLUGIN_NS + ' dragenter.' + PLUGIN_NS + ' dragover.' + PLUGIN_NS + '', function (e) {
                     var dataTransfer = e.originalEvent && e.originalEvent.dataTransfer;
 
                     if (dataTransfer && $.inArray('Files', dataTransfer.types) !== -1) {
@@ -76,8 +77,12 @@
                             $dragReceiver.add($explorer).toggleClass('drag-hover', true);
                         }
                     }
-                }).bind('drop mouseleave dragend dragleave', function (e) {
+                }).bind('drop.' + PLUGIN_NS + ' mouseleave.' + PLUGIN_NS + ' dragend.' + PLUGIN_NS + ' dragleave.' + PLUGIN_NS + '', function (e) {
                     $dragReceiver.add($explorer).toggleClass('drag-hover', false);
+                }); 
+
+                plugin.onDestroy.push(function () {
+                    $dragReceiver.unbind('.' + PLUGIN_NS);
                 });
 
                 //Show drag drop message
@@ -667,6 +672,17 @@
                 onCancel();
             }
         }
+    };
+
+
+    /**
+     * Destroy the current jQueryFM instance
+     * @public
+     */
+    Plugin.prototype.destroy = function () {
+        $(this.onDestroy).each(function (i, c) {
+            c();
+        });
     };
 
 
