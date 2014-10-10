@@ -64,6 +64,12 @@ class jQueryFM_FileManager
     public $image_preview_limit = 512000;
 
     /**
+     * If TRUE, all files will be forced to be downloaded, if FALSE, the browser will try to show it before download them
+     * @var bool
+     */
+    public $force_downloads = false;
+
+    /**
      * Allow users to drag new files anywhere in the document body
      * @var bool
      */
@@ -135,6 +141,7 @@ class jQueryFM_FileManager
             'ajax_endpoint' => $this->ajax_endpoint,
             'icons_url' => $this->icons_url,
             'drag_anywhere' => $this->drag_anywhere,
+            'force_downloads' => $this->force_downloads,
             'strings' => $this->strings
         );
 
@@ -249,8 +256,9 @@ class jQueryFM_FileManager
                         }
                     }
                     break;
+                case 'show':
                 case 'download':
-                    if ($this->provider->download($file)) {
+                    if ($this->provider->download($file, $action == 'download')) {
                         return true; //When download is successful, we cannot send more data
                     } else {
                         throw new FileManagerException('download');

@@ -79,7 +79,7 @@
                     }
                 }).bind('drop.' + PLUGIN_NS + ' mouseleave.' + PLUGIN_NS + ' dragend.' + PLUGIN_NS + ' dragleave.' + PLUGIN_NS + '', function (e) {
                     $dragReceiver.add($explorer).toggleClass('drag-hover', false);
-                }); 
+                });
 
                 plugin.onDestroy.push(function () {
                     $dragReceiver.unbind('.' + PLUGIN_NS);
@@ -351,13 +351,19 @@
             src = this._options['icons_url'] + "/" + fileData['name'].split('.').pop() + ".png";
             onclick = function () {
                 //Download file
-                var fileUrl = plugin._options['ajax_endpoint'] + (plugin._options['ajax_endpoint'].indexOf('?') == -1 ? '?' : '&') + 'action=download&file=' + fileData['name'] + '&folder=' + plugin._currentFolder;
+                var download = plugin._options['force_downloads'];
+                var fileUrl = plugin._options['ajax_endpoint'] + (plugin._options['ajax_endpoint'].indexOf('?') == -1 ? '?' : '&') + 'action=' + (download ? 'download' : 'show') + '&file=' + fileData['name'] + '&folder=' + plugin._currentFolder;
 
                 //Create a temporary iframe that is used to request the fileUrl as a GET request
-                $("<iframe>")
-                    .hide()
-                    .prop("src", fileUrl)
-                    .appendTo("body");
+                if (download) {
+                    $("<iframe>")
+                        .hide()
+                        .prop("src", fileUrl)
+                        .appendTo("body");
+                } else {
+                    window.open(fileUrl);
+                }
+
             };
         }
         $('<div class="icon" />')

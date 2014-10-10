@@ -66,7 +66,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
 
                     $item->icon = $this->manager->ajax_endpoint . (strpos($this->manager->ajax_endpoint, '?') !== false ? '&' : '?') . http_build_query(
                             array(
-                                'action' => 'download',
+                                'action' => 'show',
                                 'file' => $item->name,
                                 'folder' => $item->folder
                             )
@@ -217,9 +217,12 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             return false;
         }
 
-        header("Content-Type: application/octet-stream");
         if ($force) {
+            header("Content-Type: application/octet-stream");
             header('Content-Disposition: attachment; filename=' . $file->name);
+        } else {
+            $mime = jQueryFM_Helper::ext2mime(pathinfo($file->name, PATHINFO_EXTENSION));
+            header("Content-Type: $mime");
         }
         header('Content-Transfer-Encoding: binary');
         header('Content-Length: ' . $file->size);
