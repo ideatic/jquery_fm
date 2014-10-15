@@ -361,7 +361,10 @@
                         .prop("src", fileUrl)
                         .appendTo("body");
                 } else {
-                    window.open(fileUrl);
+                    var w = window.open(fileUrl);
+                    w.onload = function () {
+                        w.document.title = fileData['name'];
+                    };
                 }
 
             };
@@ -622,7 +625,7 @@
                 style: 'width:85%',
                 autofocus: true
             }) : $();
-            var $modal = $('<div class="modal fade"> \
+            var $modal = $('<div class="jquery_fm modal fade"> \
 <div class="modal-dialog"> \
   <div class="modal-content"> \
   <div class="modal-header"> \
