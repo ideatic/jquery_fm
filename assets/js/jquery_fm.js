@@ -63,8 +63,8 @@
                 // Makes sure the dataTransfer information is sent when we drop items
                 jQuery.event.props.push('dataTransfer');
 
-                var $dragReceiver = settings['drag_selector'] ? $(drag_selector) : $explorer;
-                $dragReceiver.bind('drop.' + PLUGIN_NS + ' dragenter.' + PLUGIN_NS + ' dragover.' + PLUGIN_NS + '', function (e) {
+                var $dragReceiver = settings['drag_selector'] ? $(settings['drag_selector']) : $explorer;
+                $dragReceiver.bind(plugin._namespaceEvents(['drop', 'dragenter', 'dragover']), function (e) {
                     var dataTransfer = e.originalEvent && e.originalEvent.dataTransfer;
 
                     if (dataTransfer && $.inArray('Files', dataTransfer.types) !== -1) {
@@ -77,7 +77,7 @@
                             $dragReceiver.add($explorer).toggleClass('drag-hover', true);
                         }
                     }
-                }).bind('drop.' + PLUGIN_NS + ' mouseleave.' + PLUGIN_NS + ' dragend.' + PLUGIN_NS + ' dragleave.' + PLUGIN_NS + '', function (e) {
+                }).bind(plugin._namespaceEvents(['drop', 'mouseleave', 'dragend', 'dragleave']), function (e) {
                     $dragReceiver.add($explorer).toggleClass('drag-hover', false);
                 });
 
@@ -269,6 +269,11 @@
         return $.ajax(ajax);
     };
 
+    Plugin.prototype._namespaceEvents = function (names) {
+        return names.map(function (type) {
+            return "" + type + "." + PLUGIN_NS;
+        }).join(" ");
+    };
     Plugin.prototype._setError = function ($file, message) {
         $('<span class="error" />').text('!')
             .attr('title', message)
@@ -548,7 +553,7 @@
                 var $icon = $file_elm.addClass('uploading').attr('title', plugin._options['strings']['uploading']).find('.icon');
 
                 //Preview icon
-                if (typeof FileReader != 'undefined' && file.type.match('image.*')) {
+                if (typeof FileReader != 'undefined' && file.type.match('image')) {
                     var reader = new FileReader();
                     reader.onload = function (event) {
                         var image = new Image();
