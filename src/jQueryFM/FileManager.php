@@ -70,10 +70,10 @@ class jQueryFM_FileManager
     public $force_downloads = false;
 
     /**
-     * Allow users to drag new files anywhere in the document body
-     * @var bool
+     * CSS selector for the DOM element that will be listen to drag events. Defaults to the file manager element.
+     * @var string
      */
-    public $drag_anywhere = false;
+    public $drag_selector = '';
 
     /**
      * Preload files with the initial config, reducing the number of HTTP requests required to initialize the manager
@@ -140,7 +140,7 @@ class jQueryFM_FileManager
             'accept_file_types' => $this->accept_file_types,
             'ajax_endpoint' => $this->ajax_endpoint,
             'icons_url' => $this->icons_url,
-            'drag_anywhere' => $this->drag_anywhere,
+            'drag_selector' => $this->drag_selector,
             'force_downloads' => $this->force_downloads,
             'strings' => $this->strings
         );

@@ -63,7 +63,7 @@
                 // Makes sure the dataTransfer information is sent when we drop items
                 jQuery.event.props.push('dataTransfer');
 
-                var $dragReceiver = settings['drag_anywhere'] ? $('body') : $explorer;
+                var $dragReceiver = settings['drag_selector'] ? $(drag_selector) : $explorer;
                 $dragReceiver.bind('drop.' + PLUGIN_NS + ' dragenter.' + PLUGIN_NS + ' dragover.' + PLUGIN_NS + '', function (e) {
                     var dataTransfer = e.originalEvent && e.originalEvent.dataTransfer;
 
@@ -354,13 +354,14 @@
                 var download = plugin._options['force_downloads'];
                 var fileUrl = plugin._options['ajax_endpoint'] + (plugin._options['ajax_endpoint'].indexOf('?') == -1 ? '?' : '&') + 'action=' + (download ? 'download' : 'show') + '&file=' + fileData['name'] + '&folder=' + plugin._currentFolder;
 
-                //Create a temporary iframe that is used to request the fileUrl as a GET request
                 if (download) {
+                    //Create a temporary iframe that is used to request the fileUrl as a GET request
                     $("<iframe>")
                         .hide()
                         .prop("src", fileUrl)
                         .appendTo("body");
                 } else {
+                    //Show the file in a new window, a set the title with the file name
                     var w = window.open(fileUrl);
                     w.onload = function () {
                         w.document.title = fileData['name'];
