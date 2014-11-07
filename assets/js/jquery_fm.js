@@ -24,6 +24,7 @@
         );
 
         /** #### PROPERTIES #### */
+        this._$target = $(target);
         this._currentFolder = '/';
         this._enableDragDrop = window.FormData && 'draggable' in document.createElement('span');
 
@@ -36,7 +37,7 @@
     /** #### INITIALISER #### */
     Plugin.prototype._init = function (target, settings) {
         var plugin = this;
-        var $fm = plugin.$fm = $('<div class="jquery_fm" />').appendTo($(target).empty());
+        var $fm = plugin.$fm = $('<div class="jquery_fm" />').appendTo(plugin._$target.empty());
         var $explorer = plugin.$explorer = $('<div class="explorer" />').appendTo($fm);
         var $files = plugin.$files = $('<div class="files" />').appendTo($explorer);
         plugin.onDestroy = [];
@@ -148,6 +149,35 @@
     };
 
     /** #### PUBLIC API #### */
+
+
+    /**
+     * Get the current shown files objets
+     * @returns array
+     */
+    Plugin.prototype.currentFiles = function () {
+        var plugin = this;
+
+        var files = [];
+        plugin.$files.children('.file').each(function () {
+            files.push($(this).data('file'))
+        });
+        return files;
+    };
+
+    /**
+     * Get the current shown folder
+     * @returns array
+     */
+    Plugin.prototype.currentFolder = function () {
+        return this._currentFolder;
+    };
+
+    /**
+     * Navigate the explorer to the given folder
+     * @param string folder
+     * @returns jQuery
+     */
     Plugin.prototype.navigateTo = function (folder) {
         var plugin = this;
 
@@ -287,7 +317,7 @@
     Plugin.prototype._findByName = function (name) {
 
         var plugin = this;
-        return plugin.$files.find('.file').filter(function () {
+        return plugin.$files.children('.file').filter(function () {
             return $(this).data('file').name == name;
         });
     };
@@ -410,7 +440,11 @@
                             //Remove file from explorer
                             $file_elm.hide('slow', function () {
                                 $file_elm.remove();
+
+                                //Trigger event
+                                plugin._$target.trigger('delete', fileData);
                             });
+
                         });
                     });
 
@@ -436,6 +470,9 @@
                             $file_elm.fadeOut('normal', function () {
                                 var $new = plugin._createFile(response.file).hide().fadeTo("slow", 1);
                                 $file_elm.replaceWith($new);
+
+                                //Trigger event
+                                plugin._$target.trigger('rename', fileData);
                             });
                         });
                     });
@@ -465,6 +502,9 @@
                 plugin._prepareFileDrag($file_elm, plugin._currentFolder + '/' + fileData['name']);
             }
         }
+
+        //Trigger event
+        plugin._$target.trigger('create', fileData);
 
         return $file_elm;
     };
@@ -581,7 +621,11 @@
                             if (response.file) {
                                 $file_elm.replaceWith(plugin._createFile(response.file));
                             }
+
+                            //Trigger event
+                            plugin._$target.trigger('upload', response.file);
                         });
+
                     }, function () {
                         //Error
                         finished = true;
