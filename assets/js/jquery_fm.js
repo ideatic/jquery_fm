@@ -95,22 +95,24 @@
                     .appendTo($explorer);
             }
 
-            // Add files using Clipboard paste
-            // The paste target element(s), by default the complete document
-            $(document).on('paste', function (e) {
-                var items = e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.items,
-                    files = [];
-                if (items && items.length) {
-                    $.each(items, function (index, item) {
-                        var file = item.getAsFile && item.getAsFile();
-                        if (file) {
-                            files.push(file);
-                        }
-                    });
+            if (settings['allow_paste_upload']) {
+                // Add files using Clipboard paste
+                // The paste target element(s), by default the complete document
+                $(document).on('paste', function (e) {
+                    var items = e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.items,
+                        files = [];
+                    if (items && items.length) {
+                        $.each(items, function (index, item) {
+                            var file = item.getAsFile && item.getAsFile();
+                            if (file) {
+                                files.push(file);
+                            }
+                        });
 
-                    plugin._upload(files);
-                }
-            });
+                        plugin._upload(files);
+                    }
+                });
+            }
         }
 
         //Create folder button

@@ -82,6 +82,13 @@ class jQueryFM_FileManager
     public $preload = true;
 
     /**
+     * Allow file upload through copy and paste.
+     * @warning Some desktop apps, like Excel, store copied data as images, causing this to upload that images wheb pasting text on the same page as the file explorer.
+     * @var bool
+     */
+    public $allow_paste_upload = false;
+
+    /**
      * Localizable strings
      * @var array
      */
@@ -135,6 +142,7 @@ class jQueryFM_FileManager
             'allow_upload' => $this->allow_upload,
             'allow_editing' => $this->allow_editing,
             'allow_folders' => $this->allow_folders,
+            'allow_paste_upload' => $this->allow_paste_upload,
             'max_file_size' => $this->max_size,
             'max_file_size_readable' => jQueryFM_Helper::format_size($this->max_size),
             'accept_file_types' => $this->accept_file_types,
