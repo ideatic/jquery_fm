@@ -126,10 +126,11 @@ class jQueryFM_FileManager
     {
         $this->provider = is_string($provider_or_path) ? new jQueryFM_FileProvider_FS($provider_or_path) : $provider_or_path;
         $this->provider->manager = $this;
+
         $max_upload = $this->_php_unit(ini_get('upload_max_filesize'));
         $max_post = $this->_php_unit(ini_get('post_max_size'));
         $memory_limit = $this->_php_unit(ini_get('memory_limit'));
-        $this->max_size = min($max_upload, $max_post, $memory_limit);
+        $this->max_size = min(array_filter([$max_upload, $max_post, $memory_limit]));
     }
 
     /**

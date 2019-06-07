@@ -62,7 +62,9 @@
             //Add files using drag and drop
             if (plugin._enableDragDrop) {
                 // Makes sure the dataTransfer information is sent when we drop items
-                jQuery.event.props.push('dataTransfer');
+                if (jQuery.event.props) {
+                    jQuery.event.props.push('dataTransfer');
+                }
 
                 var $dragReceiver = settings['drag_selector'] ? $(settings['drag_selector']) : $explorer;
                 $dragReceiver.bind(plugin._namespaceEvents(['drop', 'dragenter', 'dragover']), function (e) {
@@ -728,8 +730,7 @@
 
             if (resp) {
                 onOK(resp);
-            }
-            else if (onCancel) {
+            } else if (onCancel) {
                 onCancel();
             }
         }

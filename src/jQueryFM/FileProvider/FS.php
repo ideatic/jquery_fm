@@ -223,8 +223,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         } else {
             $mime = jQueryFM_Helper::ext2mime(pathinfo($file->name, PATHINFO_EXTENSION));
             header("Content-Type: $mime");
-            header('Content-Disposition: inline
-            ; filename=' . $file->name);
+            header('Content-Disposition: inline; filename=' . $file->name);
         }
         header('Content-Transfer-Encoding: binary');
         header('Content-Length: ' . $file->size);
@@ -240,7 +239,10 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             header('Pragma: public');
         }
 
-        ob_clean();
+
+        while (ob_get_length()) {
+            ob_clean();
+        }
         flush();
         readfile($file->path);
         return true;
