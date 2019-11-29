@@ -60,16 +60,16 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             //Extract preview
             if ($this->manager->image_preview_limit < 0 || $item->size < $this->manager->image_preview_limit) {
                 $extension = strtolower(pathinfo($item->name, PATHINFO_EXTENSION));
-                if (in_array($extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'))) {
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'])) {
                     //Inline icon (all images in one request, but disable cache)
                     //$item->icon = "data:image/$extension;base64," . base64_encode(file_get_contents($item->path));
 
                     $item->icon = $this->manager->ajax_endpoint . (strpos($this->manager->ajax_endpoint, '?') !== false ? '&' : '?') . http_build_query(
-                            array(
+                            [
                                 'action' => 'show',
-                                'file' => $item->name,
+                                'file'   => $item->name,
                                 'folder' => $item->folder
-                            )
+                            ]
                         );
                 }
             }
@@ -91,8 +91,8 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     {
         $path = $this->_get_folder_path($folder);
 
-        $folders = array();
-        $files = array();
+        $folders = [];
+        $files = [];
         if (is_dir($path)) {
             if (($handle = opendir($path)) !== false) {
                 while (false !== ($entry = readdir($handle))) {
@@ -109,7 +109,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
                 }
                 closedir($handle);
             } else {
-                throw new RuntimeException("Path '$this->path' is not readable");
+                throw new RuntimeException("Path '{$this->path}' is not readable");
             }
         }
 
@@ -200,7 +200,6 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
      */
     public function delete(FileManagerItem $file)
     {
-
         if ($file->is_folder) {
             return is_dir($file->path) && jQueryFM_Helper::recursive_delete($file->path);
         } else {

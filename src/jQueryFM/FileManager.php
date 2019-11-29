@@ -175,7 +175,7 @@ class jQueryFM_FileManager
      */
     public function render($id)
     {
-        //Initialize JS
+        // Initialize JS
         ob_start();
         ?>
         <script>
@@ -212,8 +212,6 @@ class jQueryFM_FileManager
      * Method executed as AJAX and HTTP endpoint
      *
      * @param bool $output_response
-     *
-     * @return bool|null
      */
     public function process_request($output_response = true)
     {
@@ -222,7 +220,7 @@ class jQueryFM_FileManager
         try {
             $folder = $this->allow_folders && isset($_REQUEST['folder']) ? $_REQUEST['folder'] : '/';
 
-            //Find file
+            // Find file
             if (isset($_REQUEST['file'])) {
                 $file = false;
                 foreach ($this->provider->read($folder, $_REQUEST['file']) as $f) {
@@ -236,7 +234,7 @@ class jQueryFM_FileManager
                 }
             }
 
-            //Apply action
+            // Apply action
             $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
             switch ($action) {
                 case 'upload':
@@ -248,14 +246,14 @@ class jQueryFM_FileManager
                     }
 
                     foreach ($_FILES as $id => $info) {
-                        //Check errors
+                        // Check errors
                         foreach ($info['error'] as $index => $error) {
                             if ($error != UPLOAD_ERR_OK) {
                                 throw new FileManagerException($error);
                             }
                         }
 
-                        //Move files
+                        // Move files
                         foreach ($info['error'] as $index => $error) {
                             $created_file = $this->provider->create_file($folder, basename($info['name'][$index]), $info['tmp_name'][$index]);
                             if ($created_file) {
@@ -347,9 +345,11 @@ class jQueryFM_FileManager
 
             header('Content-type: application/json');
             echo json_encode($response);
-        }
 
-        return $response['status'] == 'success';
+            return $response['status'] == 'success';
+        } else {
+            return $response;
+        }
     }
 
     /* Helpers */

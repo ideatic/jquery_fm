@@ -30,8 +30,8 @@ abstract class jQueryFM_FileProvider_Base
      * @param string $name
      * @param string $upload_path
      *
-     * @throws RuntimeException
      * @return FileManagerItem|FALSE
+     * @throws RuntimeException
      */
     public abstract function create_file($folder, $name, $upload_path);
 
