@@ -387,7 +387,7 @@
                 plugin.navigateTo(plugin._currentFolder + '/' + fileData['name']);
             };
         } else {
-            src = this._options['icons_url'] + "/" + fileData['name'].split('.').pop().toLowerCase() + ".png";
+            src = this._options['icons_url'] + "/" + (fileData['name'].split('.').pop().toLowerCase() || 'unknown') + ".png";
             onclick = function () {
                 //Download file
                 var download = plugin._options['force_downloads'];

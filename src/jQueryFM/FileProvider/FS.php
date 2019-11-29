@@ -57,12 +57,12 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             $item->size = filesize($path);
             $item->info = jQueryFM_Helper::format_size($item->size);
 
-            //Extract preview
+            // Extract preview
             if ($this->manager->image_preview_limit < 0 || $item->size < $this->manager->image_preview_limit) {
                 $extension = strtolower(pathinfo($item->name, PATHINFO_EXTENSION));
                 if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'])) {
-                    //Inline icon (all images in one request, but disable cache)
-                    //$item->icon = "data:image/$extension;base64," . base64_encode(file_get_contents($item->path));
+                    // Inline icon (all images in one request, but disables cache)
+                    // $item->icon = "data:image/$extension;base64," . base64_encode(file_get_contents($item->path));
 
                     $item->icon = $this->manager->ajax_endpoint . (strpos($this->manager->ajax_endpoint, '?') !== false ? '&' : '?') . http_build_query(
                             [
@@ -93,24 +93,22 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
 
         $folders = [];
         $files = [];
-        if (is_dir($path)) {
-            if (($handle = opendir($path)) !== false) {
-                while (false !== ($entry = readdir($handle))) {
-                    if ($entry != '.' && $entry != '..' && fnmatch($filter, $entry)) {
-                        $file = $this->_populate_file_item($path . DIRECTORY_SEPARATOR . $entry, $folder);
-                        if ($file) {
-                            if ($file->is_folder) {
-                                $folders[] = $file;
-                            } else {
-                                $files[] = $file;
-                            }
+        if (($handle = opendir($path)) !== false) {
+            while (false !== ($entry = readdir($handle))) {
+                if ($entry != '.' && $entry != '..' && fnmatch($filter, $entry)) {
+                    $file = $this->_populate_file_item($path . DIRECTORY_SEPARATOR . $entry, $folder);
+                    if ($file) {
+                        if ($file->is_folder) {
+                            $folders[] = $file;
+                        } else {
+                            $files[] = $file;
                         }
                     }
                 }
-                closedir($handle);
-            } else {
-                throw new RuntimeException("Path '{$this->path}' is not readable");
             }
+            closedir($handle);
+        } else {
+            throw new FileManagerException("Path '{$path}' is not a directory or readable");
         }
 
         return array_merge($folders, $files);
@@ -125,11 +123,11 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
 
         if (!is_dir($folder_path)) {
             if (!$folder_path || !mkdir($folder_path, 0755, true)) {
-                throw new RuntimeException("Destination path '$folder_path' cannot be created");
+                throw new FileManagerException("Destination path '{$folder_path}' cannot be created");
             }
         }
 
-        //Look for empty path
+        // Look for empty path
         $file_name = pathinfo($name, PATHINFO_FILENAME);
         $extension = pathinfo($name, PATHINFO_EXTENSION);
         $i = 0;
@@ -153,7 +151,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
      */
     public function create_folder($folder, $name)
     {
-        //Sanitize destination file
+        // Sanitize destination file
         $real_path = $this->_get_folder_path($folder);
 
         if ($real_path) {
@@ -172,13 +170,13 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
      */
     public function rename(FileManagerItem $file, $new_folder, $new_name)
     {
-        //Sanitize destination file
+        // Sanitize destination file
         $dest_folder = $this->_get_folder_path($new_folder);
         $dest_file = $dest_folder . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
         $moving = dirname($file->path) != $dest_folder;
 
         if ($moving && !is_dir($dest_folder)) {
-            //Create destination directory
+            // Create destination directory
             if (!mkdir($dest_folder, 0755, true)) {
                 return false;
             }
@@ -221,13 +219,13 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             header('Content-Disposition: attachment; filename=' . $file->name);
         } else {
             $mime = jQueryFM_Helper::ext2mime(pathinfo($file->name, PATHINFO_EXTENSION));
-            header("Content-Type: $mime");
+            header("Content-Type: {$mime}");
             header('Content-Disposition: inline; filename=' . $file->name);
         }
         header('Content-Transfer-Encoding: binary');
         header('Content-Length: ' . $file->size);
 
-        //Cache control
+        // Cache control
         $mod_date = filemtime($file->path);
         $mod_since = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? $_SERVER['HTTP_IF_MODIFIED_SINCE'] : false;
         if ($mod_date && $mod_since && strtotime($mod_since) >= $mod_date) {

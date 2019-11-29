@@ -88,6 +88,8 @@ class jQueryFM_FileManager
      */
     public $allow_paste_upload = false;
 
+    public $debug = false;
+
     /**
      * Localizable strings
      * @var array
@@ -332,9 +334,17 @@ class jQueryFM_FileManager
         } catch (FileManagerException $err) {
             $response['status'] = 'error';
             $response['message'] = 'error_' . $err->getMessage();
-        } catch (Exception $er) {
+
+            if ($this->debug) {
+                $response['error'] = $err->__toString();
+            }
+        } catch (Exception $err) {
             $response['status'] = 'error';
             $response['message'] = 'error';
+
+            if ($this->debug) {
+                $response['error'] = $err->__toString();
+            }
         }
 
 
