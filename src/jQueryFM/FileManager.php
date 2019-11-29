@@ -92,30 +92,30 @@ class jQueryFM_FileManager
      * Localizable strings
      * @var array
      */
-    public $strings = array(
-        'add_file' => 'Add file',
-        'download' => 'Download',
-        'delete' => 'Delete',
-        'rename' => 'Rename',
-        'confirm_delete' => 'Are you sure you want to delete this file? The operation can not be undone',
-        'prompt_newname' => 'Please type the new file name:',
-        'drop_files' => 'Drop your files here!',
-        'max_file_size' => 'max % each file',
-        'accept' => 'Accept',
-        'cancel' => 'Cancel',
-        'create_folder' => 'Create folder',
+    public $strings = [
+        'add_file'             => 'Add file',
+        'download'             => 'Download',
+        'delete'               => 'Delete',
+        'rename'               => 'Rename',
+        'confirm_delete'       => 'Are you sure you want to delete this file? The operation can not be undone',
+        'prompt_newname'       => 'Please type the new file name:',
+        'drop_files'           => 'Drop your files here!',
+        'max_file_size'        => 'max % each file',
+        'accept'               => 'Accept',
+        'cancel'               => 'Cancel',
+        'create_folder'        => 'Create folder',
         'create_folder_prompt' => 'Please type the new folder name:',
-        'number_files' => '% files',
-        'home_folder' => 'Home',
-        'try_again' => 'Try again',
-        'uploading' => 'Uploading...',
-        'cancel_upload' => 'Cancel upload',
-        'unnamed' => 'Unnamed',
-        'error' => 'Error processing the request',
-        'error_filetype' => 'File type not allowed',
-        'error_maxsize' => 'File is too large',
-        'error_rename' => 'Error renaming the file, please check that the new name is unique for the current folder and try again',
-    );
+        'number_files'         => '% files',
+        'home_folder'          => 'Home',
+        'try_again'            => 'Try again',
+        'uploading'            => 'Uploading...',
+        'cancel_upload'        => 'Cancel upload',
+        'unnamed'              => 'Unnamed',
+        'error'                => 'Error processing the request',
+        'error_filetype'       => 'File type not allowed',
+        'error_maxsize'        => 'File is too large',
+        'error_rename'         => 'Error renaming the file, please check that the new name is unique for the current folder and try again',
+    ];
 
     /**
      * Initializes a new instance
@@ -139,23 +139,23 @@ class jQueryFM_FileManager
      */
     public function js_config()
     {
-        $settings = array(
-            'allow_upload' => $this->allow_upload,
-            'allow_editing' => $this->allow_editing,
-            'allow_folders' => $this->allow_folders,
-            'allow_paste_upload' => $this->allow_paste_upload,
-            'max_file_size' => $this->max_size,
+        $settings = [
+            'allow_upload'           => $this->allow_upload,
+            'allow_editing'          => $this->allow_editing,
+            'allow_folders'          => $this->allow_folders,
+            'allow_paste_upload'     => $this->allow_paste_upload,
+            'max_file_size'          => $this->max_size,
             'max_file_size_readable' => jQueryFM_Helper::format_size($this->max_size),
-            'accept_file_types' => $this->accept_file_types,
-            'ajax_endpoint' => $this->ajax_endpoint,
-            'icons_url' => $this->icons_url,
-            'drag_selector' => $this->drag_selector,
-            'force_downloads' => $this->force_downloads,
-            'strings' => $this->strings
-        );
+            'accept_file_types'      => $this->accept_file_types,
+            'ajax_endpoint'          => $this->ajax_endpoint,
+            'icons_url'              => $this->icons_url,
+            'drag_selector'          => $this->drag_selector,
+            'force_downloads'        => $this->force_downloads,
+            'strings'                => $this->strings
+        ];
 
         if ($this->preload) {
-            $files = array();
+            $files = [];
 
             foreach ($this->provider->read() as $f) {
                 $files[] = $this->_export_file($f);
@@ -182,16 +182,17 @@ class jQueryFM_FileManager
             jQuery('#<?= $id ?>').jquery_fm(<?= json_encode($this->js_config()) ?>);
         </script>
         <?php
+
         return ob_get_clean();
     }
 
     private function _export_file(FileManagerItem $file)
     {
-        $data = array(
-            'name' => $file->name,
-            'info' => $file->info,
+        $data = [
+            'name'      => $file->name,
+            'info'      => $file->info,
             'is_folder' => $file->is_folder,
-        );
+        ];
 
         if ($file->icon) {
             $data['icon'] = $file->icon;
@@ -216,7 +217,7 @@ class jQueryFM_FileManager
      */
     public function process_request($output_response = true)
     {
-        $response = array('status' => 'success');
+        $response = ['status' => 'success'];
 
         try {
             $folder = $this->allow_folders && isset($_REQUEST['folder']) ? $_REQUEST['folder'] : '/';
@@ -305,7 +306,7 @@ class jQueryFM_FileManager
                         throw new FileManagerException('unauthorized');
                     }
 
-                    $response['files'] = array();
+                    $response['files'] = [];
                     foreach ($this->provider->read($folder) as $file) {
                         $response['files'][] = $this->_export_file($file);
                     }
@@ -356,8 +357,13 @@ class jQueryFM_FileManager
     private function _php_unit($val)
     {
         $val = trim($val);
-        $last = strtolower($val[strlen($val) - 1]);
-        switch ($last) {
+        $unit = '';
+
+        if (!ctype_digit($val)) {
+            $unit = strtolower($val[strlen($val) - 1]);
+            $val = intval(substr($val, 0, -1));
+        }
+        switch ($unit) {
             // The 'G' modifier is available since PHP 5.1.0
             case 'g':
                 $val *= 1024;

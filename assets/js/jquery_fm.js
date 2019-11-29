@@ -88,7 +88,7 @@
                     $dragReceiver.unbind('.' + PLUGIN_NS);
                 });
 
-                //Show drag drop message
+                // Show drag drop message
                 $('<div class="drag-drop-message" />')
                     .append('<i class="icon-download"></i>')
                     .append(settings['strings']['drop_files'])
@@ -379,7 +379,7 @@
         var $file_elm = $('<div class="file" />')
             .data('file', fileData);
 
-        //Icon
+        // Icon
         var src, onclick;
         if (fileData['is_folder']) {
             src = this._options['icons_url'] + "/folder.png";
@@ -387,7 +387,7 @@
                 plugin.navigateTo(plugin._currentFolder + '/' + fileData['name']);
             };
         } else {
-            src = this._options['icons_url'] + "/" + fileData['name'].split('.').pop() + ".png";
+            src = this._options['icons_url'] + "/" + fileData['name'].split('.').pop().toLowerCase() + ".png";
             onclick = function () {
                 //Download file
                 var download = plugin._options['force_downloads'];
@@ -428,13 +428,13 @@
         //Tools
         var $tools = $('<div class="tools" />');
         if (fileData['uploading']) {
-            //Cancel upload
+            // Cancel upload
             $('<a class="btn btn-sm btn-warning cancel" />')
                 .attr('title', plugin._options['strings']['cancel_upload'])
                 .prepend('<i class="icon-cancel"></i>')
                 .appendTo($tools);
         } else if (plugin._options['allow_editing'] && (!fileData.hasOwnProperty('allow_edit') || fileData['allow_edit'] == true)) {
-            //Delete
+            // Delete
             $('<a class="btn btn-sm btn-danger delete" />')
                 .attr('title', plugin._options['strings']['delete'])
                 .prepend('<i class="icon-trash"></i>')
@@ -456,7 +456,7 @@
                 })
                 .appendTo($tools);
 
-            //Rename
+            // Rename
             $('<a class="btn btn-sm btn-info rename" />')
                 .attr('title', plugin._options['strings']['rename'])
                 .prepend('<i class="icon-edit"></i>')
@@ -490,7 +490,7 @@
             $tools.appendTo($file_elm);
         }
 
-        //Drag & drop
+        // Drag & drop
         if (plugin._options['allow_folders']) {
             $file_elm.attr('draggable', true)
                 .bind('dragstart', function (e) {
