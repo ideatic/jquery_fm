@@ -1,22 +1,28 @@
 {
-    "name": "ideatic/jquery_fm",
-    "description": "Advanced jQuery File Upload & Manager",
-    "keywords": ["js", "jquery","file manager", "file upload"],
-    "type": "library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Javier Marín",
-            "email": "contacto@ideatic.net",
-            "homepage": "http://www.ideatic.net/"
-        }
-    ],
-    "require": {
-        "php": ">=5.2"
-    },
-    "autoload": {
-        "psr-0": {
-            "jQueryFM_": "src/"
-        }
+  "name": "ideatic/jquery_fm",
+  "description": "Advanced jQuery File Upload & Manager",
+  "keywords": [
+    "js",
+    "jquery",
+    "file manager",
+    "file upload"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Javier Marín",
+      "email": "contacto@ideatic.net",
+      "homepage": "http://www.ideatic.net/"
     }
+  ],
+  "require": {
+    "php": ">=5.2",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-0": {
+      "jQueryFM_": "src/"
+    }
+  }
 }

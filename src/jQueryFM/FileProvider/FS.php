@@ -24,17 +24,17 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
      *
      * @return string
      */
-    protected function _get_folder_path($folder)
+    protected function _get_full_path($folder)
     {
         if ($this->manager->allow_folders && $folder != '/' && $folder != '') {
-            $folder = str_replace("\x00", '', (string)$folder); //Protect null bytes (http://www.php.net/manual/en/security.filesystem.nullbytes.php)
-            $folder = str_replace('..', '', $folder); //Protect relative paths
-            $real_folder = $this->path . DIRECTORY_SEPARATOR . $folder;
+            $folder = str_replace("\x00", '', (string)$folder); // Protect null bytes (http://www.php.net/manual/en/security.filesystem.nullbytes.php)
+            $folder = str_replace('..', '', $folder); // Protect relative paths
+            $full_path = $this->path . DIRECTORY_SEPARATOR . $folder;
         } else {
-            $real_folder = $this->path;
+            $full_path = $this->path;
         }
 
-        return $real_folder;
+        return $full_path;
     }
 
     /**
@@ -50,7 +50,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         $item->is_folder = is_dir($path);
         if ($item->is_folder) {
             if (!$this->manager->allow_folders) {
-                return false;
+                return null;
             }
             $item->info = str_replace('%', max(0, iterator_count(new DirectoryIterator($path)) - 2), $this->manager->strings['number_files']);
         } else {
@@ -75,7 +75,6 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             }
         }
 
-
         return $item;
     }
 
@@ -89,19 +88,19 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
      */
     public function read($folder = '/', $filter = '*')
     {
-        $path = $this->_get_folder_path($folder);
+        $path = $this->_get_full_path($folder);
 
         $folders = [];
         $files = [];
         if (($handle = opendir($path)) !== false) {
             while (false !== ($entry = readdir($handle))) {
-                if ($entry != '.' && $entry != '..' && fnmatch($filter, $entry)) {
-                    $file = $this->_populate_file_item($path . DIRECTORY_SEPARATOR . $entry, $folder);
-                    if ($file) {
-                        if ($file->is_folder) {
-                            $folders[] = $file;
+                if ($entry != '.' && $entry != '..' && ($filter == '*' || fnmatch($filter, $entry))) {
+                    $item = $this->_populate_file_item($path . DIRECTORY_SEPARATOR . $entry, $folder);
+                    if ($item) {
+                        if ($item->is_folder) {
+                            $folders[] = $item;
                         } else {
-                            $files[] = $file;
+                            $files[] = $item;
                         }
                     }
                 }
@@ -119,7 +118,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
      */
     public function create_file($folder, $name, $tmp_path)
     {
-        $folder_path = $this->_get_folder_path($folder);
+        $folder_path = $this->_get_full_path($folder);
 
         if (!is_dir($folder_path)) {
             if (!$folder_path || !mkdir($folder_path, 0755, true)) {
@@ -152,7 +151,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     public function create_folder($folder, $name)
     {
         // Sanitize destination file
-        $real_path = $this->_get_folder_path($folder);
+        $real_path = $this->_get_full_path($folder);
 
         if ($real_path) {
             $path = $real_path . DIRECTORY_SEPARATOR . $this->_clean_filename($name);
@@ -171,7 +170,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     public function rename(FileManagerItem $file, $new_folder, $new_name)
     {
         // Sanitize destination file
-        $dest_folder = $this->_get_folder_path($new_folder);
+        $dest_folder = $this->_get_full_path($new_folder);
         $dest_file = $dest_folder . DIRECTORY_SEPARATOR . $this->_clean_filename($new_name);
         $moving = dirname($file->path) != $dest_folder;
 
@@ -183,7 +182,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         }
 
         if (file_exists($file->path) && !file_exists($dest_file) && rename($file->path, $dest_file)) {
-            //If directory changes, return directory info
+            // If directory changes, return directory info
             if ($moving) {
                 return $this->_populate_file_item($dest_folder, $file->folder);
             } else {
