@@ -13,12 +13,6 @@ abstract class jQueryFM_FileProvider_Base
     public $manager;
 
     /**
-     * Debug info to be included with the response body
-     * @var mixed
-     */
-    public $debug_info = null;
-
-    /**
      * Gets the files in the specified folder
      *
      * @param string $folder

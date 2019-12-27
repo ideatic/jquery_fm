@@ -349,10 +349,6 @@ class jQueryFM_FileManager
             }
         }
 
-        if ($this->debug && !empty($this->provider->debug_info)) {
-            $response['debug'] = $this->provider->debug_info;
-        }
-
         if ($output_response) {
             if ($response['status'] == 'error') {
                 header("HTTP/1.1 500");

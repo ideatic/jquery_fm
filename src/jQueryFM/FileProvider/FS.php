@@ -89,7 +89,6 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     public function read($folder = '/', $filter = '*')
     {
         $path = $this->_get_full_path($folder);
-        $this->debug_info = ['full_path' => $path, 'files' => []];
 
         $folders = [];
         $files = [];
@@ -101,8 +100,6 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
 
         while (false !== ($entry = readdir($handle))) {
             if ($entry != '.' && $entry != '..' && ($filter == '*' || fnmatch($filter, $entry))) {
-                $this->debug_info['files'][] = $path . DIRECTORY_SEPARATOR . $entry;
-
                 $item = $this->_populate_file_item($path . DIRECTORY_SEPARATOR . $entry, $folder);
 
                 if ($item) {
