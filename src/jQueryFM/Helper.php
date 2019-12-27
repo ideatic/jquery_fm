@@ -19,9 +19,8 @@ abstract class jQueryFM_Helper
 
     public static function format_size($size, $kilobyte = 1024, $format = '%size% %unit%')
     {
-        if ($size < $kilobyte) {
-            $unit = 'bytes';
-        } else {
+        $unit = 'bytes';
+        if ($size >= $kilobyte) {
             $size = $size / $kilobyte;
             $units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
             foreach ($units as $unit) {

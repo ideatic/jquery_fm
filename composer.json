@@ -18,7 +18,8 @@
   ],
   "require": {
     "php": ">=5.2",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-ctype": "*"
   },
   "autoload": {
     "psr-0": {

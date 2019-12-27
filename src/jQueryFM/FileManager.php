@@ -122,7 +122,7 @@ class jQueryFM_FileManager
     /**
      * Initializes a new instance
      *
-     * @param \jQueryFM_FileProvider_Base|string $provider_or_path File provider used to navigate and perform the actions on the explorer, or string to path manipulated using jQueryFM_FileProvider_FS
+     * @param jQueryFM_FileProvider_Base|string $provider_or_path File provider used to navigate and perform the actions on the explorer, or string to path manipulated using jQueryFM_FileProvider_FS
      */
     public function __construct($provider_or_path)
     {
@@ -158,7 +158,6 @@ class jQueryFM_FileManager
 
         if ($this->preload) {
             $files = [];
-
             foreach ($this->provider->read() as $f) {
                 $files[] = $this->_export_file($f);
             }
@@ -214,6 +213,8 @@ class jQueryFM_FileManager
      * Method executed as AJAX and HTTP endpoint
      *
      * @param bool $output_response
+     *
+     * @return array|bool
      */
     public function process_request($output_response = true)
     {
@@ -223,14 +224,15 @@ class jQueryFM_FileManager
             $folder = $this->allow_folders && isset($_REQUEST['folder']) ? $_REQUEST['folder'] : '/';
 
             // Find file
+            $file = null;
             if (isset($_REQUEST['file'])) {
-                $file = false;
                 foreach ($this->provider->read($folder, $_REQUEST['file']) as $f) {
                     if ($f->name == $_REQUEST['file']) {
                         $file = $f;
                         break;
                     }
                 }
+
                 if (!$file) {
                     throw new FileManagerException('file_not_found');
                 }
@@ -242,8 +244,7 @@ class jQueryFM_FileManager
                 case 'upload':
                     if (!$this->allow_upload) {
                         throw new FileManagerException('unauthorized');
-                    }
-                    if (empty($_FILES)) {
+                    } elseif (empty($_FILES)) {
                         throw new FileManagerException('empty_upload');
                     }
 
@@ -266,10 +267,11 @@ class jQueryFM_FileManager
                         }
                     }
                     break;
+
                 case 'show':
                 case 'download':
                     if ($this->provider->download($file, $action == 'download')) {
-                        return true; //When download is successful, we cannot send more data
+                        return true; // When download is successful, we cannot send more data
                     } else {
                         throw new FileManagerException('download');
                     }
@@ -347,6 +349,9 @@ class jQueryFM_FileManager
             }
         }
 
+        if ($this->debug && !empty($this->provider->debug_info)) {
+            $response['debug'] = $this->provider->debug_info;
+        }
 
         if ($output_response) {
             if ($response['status'] == 'error') {
@@ -373,14 +378,20 @@ class jQueryFM_FileManager
             $unit = strtolower($val[strlen($val) - 1]);
             $val = intval(substr($val, 0, -1));
         }
+
         switch ($unit) {
             // The 'G' modifier is available since PHP 5.1.0
             case 'g':
-                $val *= 1024;
+                $val *= (1024 * 1024 * 1024);
+                break;
+
             case 'm':
-                $val *= 1024;
+                $val *= (1024 * 1024);
+                break;
+
             case 'k':
                 $val *= 1024;
+                break;
         }
 
         return $val;

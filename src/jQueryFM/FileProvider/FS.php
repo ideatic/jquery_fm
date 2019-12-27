@@ -34,7 +34,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             $full_path = $this->path;
         }
 
-        return $full_path;
+        return rtrim($full_path, DIRECTORY_SEPARATOR);
     }
 
     /**
@@ -89,26 +89,33 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     public function read($folder = '/', $filter = '*')
     {
         $path = $this->_get_full_path($folder);
+        $this->debug_info = ['full_path' => $path, 'files' => []];
 
         $folders = [];
         $files = [];
-        if (($handle = opendir($path)) !== false) {
-            while (false !== ($entry = readdir($handle))) {
-                if ($entry != '.' && $entry != '..' && ($filter == '*' || fnmatch($filter, $entry))) {
-                    $item = $this->_populate_file_item($path . DIRECTORY_SEPARATOR . $entry, $folder);
-                    if ($item) {
-                        if ($item->is_folder) {
-                            $folders[] = $item;
-                        } else {
-                            $files[] = $item;
-                        }
+        $handle = opendir($path);
+
+        if ($handle === false) {
+            throw new FileManagerException("Path '{$path}' is not a directory or readable");
+        }
+
+        while (false !== ($entry = readdir($handle))) {
+            if ($entry != '.' && $entry != '..' && ($filter == '*' || fnmatch($filter, $entry))) {
+                $this->debug_info['files'][] = $path . DIRECTORY_SEPARATOR . $entry;
+
+                $item = $this->_populate_file_item($path . DIRECTORY_SEPARATOR . $entry, $folder);
+
+                if ($item) {
+                    if ($item->is_folder) {
+                        $folders[] = $item;
+                    } else {
+                        $files[] = $item;
                     }
                 }
             }
-            closedir($handle);
-        } else {
-            throw new FileManagerException("Path '{$path}' is not a directory or readable");
         }
+
+        closedir($handle);
 
         return array_merge($folders, $files);
     }
