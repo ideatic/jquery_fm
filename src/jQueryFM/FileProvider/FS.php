@@ -29,7 +29,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         if ($this->manager->allow_folders && $folder != '/' && $folder != '') {
             $folder = str_replace("\x00", '', (string)$folder); // Protect null bytes (http://www.php.net/manual/en/security.filesystem.nullbytes.php)
             $folder = str_replace('..', '', $folder); // Protect relative paths
-            $full_path = $this->path . DIRECTORY_SEPARATOR . $folder;
+            $full_path = rtrim($this->path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($folder, DIRECTORY_SEPARATOR);
         } else {
             $full_path = $this->path;
         }
