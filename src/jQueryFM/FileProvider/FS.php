@@ -160,7 +160,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
         if ($real_path) {
             $path = $real_path . DIRECTORY_SEPARATOR . $this->_clean_filename($name);
 
-            if (!is_dir($path) && mkdir($path, 0755, true) && ($path = realpath($path))) {
+            if (!is_dir($path) && mkdir($path, 0755, true)) {
                 return $this->_populate_file_item($path, $folder);
             }
         }
