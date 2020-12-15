@@ -60,7 +60,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             // Extract preview
             if ($this->manager->image_preview_limit < 0 || $item->size < $this->manager->image_preview_limit) {
                 $extension = strtolower(pathinfo($item->name, PATHINFO_EXTENSION));
-                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'])) {
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'heif'])) {
                     // Inline icon (all images in one request, but disables cache)
                     // $item->icon = "data:image/$extension;base64," . base64_encode(file_get_contents($item->path));
 
