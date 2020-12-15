@@ -54,7 +54,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             }
             $item->info = str_replace('%', max(0, iterator_count(new DirectoryIterator($path)) - 2), $this->manager->strings['number_files']);
         } else {
-            $item->size = filesize($path);
+            $item->size = @filesize($path);
             $item->info = jQueryFM_Helper::format_size($item->size);
 
             // Extract preview
