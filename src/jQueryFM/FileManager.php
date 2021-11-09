@@ -181,7 +181,7 @@ class jQueryFM_FileManager
             'is_folder' => $file->is_folder,
         ];
 
-        if ($file->icon) {
+        if (isset($file->icon)) {
             $data['icon'] = $file->icon;
         }
 
