@@ -54,13 +54,13 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             }
             $item->info = str_replace('%', max(0, iterator_count(new DirectoryIterator($path)) - 2), $this->manager->strings['number_files']);
         } else {
-            $item->size = filesize($path);
+            $item->size = @filesize($path);
             $item->info = jQueryFM_Helper::format_size($item->size);
 
             // Extract preview
             if ($this->manager->image_preview_limit < 0 || $item->size < $this->manager->image_preview_limit) {
                 $extension = strtolower(pathinfo($item->name, PATHINFO_EXTENSION));
-                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'])) {
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'heif'])) {
                     // Inline icon (all images in one request, but disables cache)
                     // $item->icon = "data:image/$extension;base64," . base64_encode(file_get_contents($item->path));
 
@@ -86,9 +86,13 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     /**
      *  {@inheritDoc}
      */
-    public function read($folder = '/', $filter = '*')
+    public function read(string $folder = '/', string $filter = '*'): array
     {
         $path = $this->_get_full_path($folder);
+
+        if (!is_dir($path)) {
+            return [];
+        }
 
         $folders = [];
         $files = [];
@@ -120,7 +124,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     /**
      *  {@inheritDoc}
      */
-    public function create_file($folder, $name, $tmp_path)
+    public function create_file(string $folder, string $name, string $upload_path): ?FileManagerItem
     {
         $folder_path = $this->_get_full_path($folder);
 
@@ -143,7 +147,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
             $i++;
         } while (file_exists($path));
 
-        if (move_uploaded_file($tmp_path, $path)) {
+        if (move_uploaded_file($upload_path, $path)) {
             return $this->_populate_file_item($path, $folder);
         }
         return false;
@@ -152,7 +156,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     /**
      *  {@inheritDoc}
      */
-    public function create_folder($folder, $name)
+    public function create_folder(string $folder, string $name): ?FileManagerItem
     {
         // Sanitize destination file
         $real_path = $this->_get_full_path($folder);
@@ -171,7 +175,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     /**
      *  {@inheritDoc}
      */
-    public function rename(FileManagerItem $file, $new_folder, $new_name)
+    public function rename(FileManagerItem $file, string $new_folder, string $new_name): FileManagerItem
     {
         // Sanitize destination file
         $dest_folder = $this->_get_full_path($new_folder);
@@ -199,7 +203,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     /**
      *  {@inheritDoc}
      */
-    public function delete(FileManagerItem $file)
+    public function delete(FileManagerItem $file): bool
     {
         if ($file->is_folder) {
             return is_dir($file->path) && jQueryFM_Helper::recursive_delete($file->path);
@@ -211,7 +215,7 @@ class jQueryFM_FileProvider_FS extends jQueryFM_FileProvider_Base
     /**
      *  {@inheritDoc}
      */
-    public function download(FileManagerItem $file, $force = true)
+    public function download(FileManagerItem $file, bool $force = true): bool
     {
         if (!file_exists($file->path)) {
             return false;

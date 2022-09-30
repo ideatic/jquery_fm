@@ -8,69 +8,40 @@ abstract class jQueryFM_FileProvider_Base
 
     /**
      * FileManager that uses this provider
-     * @var jQueryFM_FileManager
      */
-    public $manager;
+    public jQueryFM_FileManager $manager;
 
     /**
      * Gets the files in the specified folder
      *
-     * @param string $folder
-     * @param string $filter
-     *
      * @return FileManagerItem[]
      * @throws RuntimeException
      */
-    public abstract function read($folder = '/', $filter = '*');
+    public abstract function read(string $folder = '/', string $filter = '*'): array;
 
     /**
      * Save the uploaded file in the given folder.
-     *
-     * @param string $folder
-     * @param string $name
-     * @param string $upload_path
-     *
-     * @return FileManagerItem|FALSE
      * @throws RuntimeException
      */
-    public abstract function create_file($folder, $name, $upload_path);
+    public abstract function create_file(string $folder, string $name, string $upload_path): ?FileManagerItem;
 
     /**
      * Create a new folder inside the given folder
-     *
-     * @param $folder
-     * @param $name
-     *
-     * @return FileManagerItem|FALSE
      */
-    public abstract function create_folder($folder, $name);
+    public abstract function create_folder(string $folder, string $name): ?FileManagerItem;
 
     /**
      * Rename the indicated file.
-     *
-     * @param FileManagerItem $file
-     * @param                 $new_name
-     *
-     * @return FileManagerItem
      */
-    public abstract function rename(FileManagerItem $file, $new_folder, $new_name);
+    public abstract function rename(FileManagerItem $file, string $new_folder, string $new_name): FileManagerItem;
 
     /**
      * Delete the given file.
-     *
-     * @param FileManagerItem $file
-     *
-     * @return boolean
      */
-    public abstract function delete(FileManagerItem $file);
+    public abstract function delete(FileManagerItem $file): bool;
 
     /**
      * Send the given file to the browser.
-     *
-     * @param FileManagerItem $file
-     * @param FileManagerItem $force Force download
-     *
-     * @return boolean
      */
-    public abstract function download(FileManagerItem $file, $force = true);
+    public abstract function download(FileManagerItem $file, bool $force = true): bool;
 }

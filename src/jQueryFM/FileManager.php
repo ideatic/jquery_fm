@@ -9,92 +9,78 @@ class jQueryFM_FileManager
     /**
      * Provider used to list and manipulate files.
      * This is a read only property
-     * @var jQueryFM_FileProvider_Base
      */
-    public $provider;
+    public jQueryFM_FileProvider_Base $provider;
 
     /**
      * URL to the ajax endpoint
-     * @var string
      */
-    public $ajax_endpoint;
+    public string $ajax_endpoint;
 
     /**
      * URL to the static folder that contains file extension icons
-     * @var string
      */
-    public $icons_url = 'static';
+    public string $icons_url = 'static';
 
     /**
      * Maximum file size allowed to be uploaded (in bytes)
-     * @var int
      */
-    public $max_size;
+    public int $max_size;
 
     /**
      * Allow users to upload new files
-     * @var boolean
      */
-    public $allow_upload = true;
+    public bool $allow_upload = true;
 
     /**
      * Allow users to delete or rename existing files
-     * @var boolean
      */
-    public $allow_editing = true;
+    public bool $allow_editing = true;
 
     /**
      * Allow users to create and explore folders
-     * @var boolean
      */
-    public $allow_folders = true;
+    public bool $allow_folders = true;
 
     /**
      * The regular expression for allowed file types, matches against either file mime type or file name.
      * For example, for only allow images, you can use this regular expression: (\.|\/)(gif|jpe?g|png)$
-     * @var string
      */
-    public $accept_file_types = '';
+    public string $accept_file_types = '';
 
     /**
      * Maximum size, in bytes, that an image can have for show it as a preview. Defaults to 500 KB, 0 to disable image previewing, -1 means unlimited (all images will be previewed)
      * @warning This option can consume a lot of bandwidth
-     * @var int
      */
-    public $image_preview_limit = 512000;
+    public int $image_preview_limit = 512000;
 
     /**
      * If TRUE, all files will be forced to be downloaded, if FALSE, the browser will try to show it before download them
-     * @var bool
      */
-    public $force_downloads = false;
+    public bool $force_downloads = false;
 
     /**
      * CSS selector for the DOM element that will be listen to drag events. Defaults to the file manager element.
-     * @var string
      */
-    public $drag_selector = '';
+    public string $drag_selector = '';
 
     /**
      * Preload files with the initial config, reducing the number of HTTP requests required to initialize the manager
-     * @var bool
      */
-    public $preload = true;
+    public bool $preload = true;
 
     /**
      * Allow file upload through copy and paste.
      * @warning Some desktop apps, like Excel, store copied data as images, causing this to upload that images wheb pasting text on the same page as the file explorer.
-     * @var bool
      */
-    public $allow_paste_upload = false;
+    public bool $allow_paste_upload = false;
 
-    public $debug = false;
+    public bool $debug = false;
 
     /**
      * Localizable strings
-     * @var array
      */
-    public $strings = [
+    public array $strings = [
         'add_file'             => 'Add file',
         'download'             => 'Download',
         'delete'               => 'Delete',
@@ -139,7 +125,7 @@ class jQueryFM_FileManager
      * Gets the required settings to initialize the JS file manager
      * @return array
      */
-    public function js_config()
+    public function js_config(): array
     {
         $settings = [
             'allow_upload'           => $this->allow_upload,
@@ -174,7 +160,7 @@ class jQueryFM_FileManager
      *
      * @return string
      */
-    public function render($id)
+    public function render(string $id): string
     {
         // Initialize JS
         ob_start();
@@ -187,7 +173,7 @@ class jQueryFM_FileManager
         return ob_get_clean();
     }
 
-    private function _export_file(FileManagerItem $file)
+    private function _export_file(FileManagerItem $file): array
     {
         $data = [
             'name'      => $file->name,
@@ -195,14 +181,14 @@ class jQueryFM_FileManager
             'is_folder' => $file->is_folder,
         ];
 
-        if ($file->icon) {
+        if (isset($file->icon)) {
             $data['icon'] = $file->icon;
         }
 
         if (!$file->allow_edit) {
             $data['allow_edit'] = $file->allow_edit;
         }
-        if ($file->title) {
+        if (isset($file->title)) {
             $data['title'] = $file->title;
         }
 
@@ -216,7 +202,7 @@ class jQueryFM_FileManager
      *
      * @return array|bool
      */
-    public function process_request($output_response = true)
+    public function process_request(bool $output_response = true)
     {
         $response = ['status' => 'success'];
 
@@ -365,7 +351,7 @@ class jQueryFM_FileManager
 
     /* Helpers */
 
-    private function _php_unit($val)
+    private function _php_unit(string $val): int
     {
         $val = trim($val);
         $unit = '';
@@ -400,58 +386,50 @@ class FileManagerItem
 
     /**
      * File name
-     * @var string
      */
-    public $name;
+    public string $name;
 
     /**
      * Real file path
-     * @var mixed
+     * @var string|bool
      */
     public $path;
 
     /**
      * Relative folder to this file
-     * @var string
      */
-    public $folder;
+    public string $folder;
 
     /**
      * File size (if applicable)
-     * @var int
      */
-    public $size;
+    public int $size;
 
     /**
      * File info to show (file size, number of files, etc.)
      * It can be an HTML string
-     * @var string
      */
-    public $info;
+    public string $info;
 
     /**
      * The current file is a folder
-     * @var boolean
      */
-    public $is_folder = false;
+    public bool $is_folder = false;
 
     /**
      * Base64 version of the icon used to represent this file
-     * @var string
      */
-    public $icon;
+    public string $icon;
 
     /**
      * File title to show on mouse hover
-     * @var string
      */
-    public $title;
+    public string $title;
 
     /**
      * Allow item editing (renaming, deleting, etc.)
-     * @var bool
      */
-    public $allow_edit = true;
+    public bool $allow_edit = true;
 }
 
 class FileManagerException extends Exception

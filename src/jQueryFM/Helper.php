@@ -2,7 +2,7 @@
 
 abstract class jQueryFM_Helper
 {
-    public static function format_number($number, $decimals = 0)
+    public static function format_number($number, int $decimals = 0):string
     {
         $locale = localeconv();
         $dec_point = $locale['decimal_point'];
@@ -17,7 +17,7 @@ abstract class jQueryFM_Helper
         return $result;
     }
 
-    public static function format_size($size, $kilobyte = 1024, $format = '%size% %unit%')
+    public static function format_size(int $size,int $kilobyte = 1024, string $format = '%size% %unit%'):string
     {
         $unit = 'bytes';
         if ($size >= $kilobyte) {
@@ -41,7 +41,7 @@ abstract class jQueryFM_Helper
         );
     }
 
-    public static function recursive_delete($directory, $delete_dirs = true)
+    public static function recursive_delete(string $directory,bool $delete_dirs = true):bool
     {
         if (!is_dir($directory)) {
             return false;
@@ -68,7 +68,7 @@ abstract class jQueryFM_Helper
         return rmdir($directory);
     }
 
-    public static function ext2mime($ext)
+    public static function ext2mime(string $ext):string
     {
         $mime = [
             '3dml'        => 'text/vnd.in3d.3dml',
