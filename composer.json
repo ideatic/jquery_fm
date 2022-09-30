@@ -17,7 +17,7 @@
     }
   ],
   "require": {
-    "php": ">=5.2",
+    "php": ">=8.0",
     "ext-json": "*",
     "ext-ctype": "*"
   },
