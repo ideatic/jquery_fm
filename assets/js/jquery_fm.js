@@ -629,7 +629,7 @@
                             }
 
                             //Trigger event
-                            plugin._$target.trigger('upload', response.file);
+                            plugin._$target.trigger('upload', {folder: folder || plugin._currentFolder, ...response.file});
                         });
 
                     }, function () {
